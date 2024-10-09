@@ -5,10 +5,11 @@ import (
 	"student/student"
 	"time"
 )
-func checkforerrors(err string){
-	if err==""{
+
+func checkforerrors(err string) {
+	if err == "" {
 		fmt.Println("Created Student successfully")
-	}else{
+	} else {
 		fmt.Println(err)
 	}
 }
@@ -29,7 +30,6 @@ func main() {
 	student2.PrintDetails()
 	student3.PrintDetails()
 
-	
 	fmt.Println("--------------------------------------------------------------------------------------------")
 	fmt.Printf("READ ALL STUDENTS\n\n")
 	allStudents := student.ReadAllStudents()
@@ -47,7 +47,7 @@ func main() {
 	if err != "" {
 		fmt.Println(err)
 	} else {
-		fmt.Println("Student with Roll No", rollNoToRead,":")
+		fmt.Println("Student with Roll No", rollNoToRead, ":")
 		studentFound.PrintDetails()
 	}
 
@@ -55,21 +55,27 @@ func main() {
 	fmt.Printf("UPDATE STUDENT BY ROLL NO\n\n")
 
 	rollNoToUpdate := 1
-	studentToBeUpdated,err:=student.ReadStudentByRollNo(rollNoToUpdate)
+	studentToBeUpdated, err := student.ReadStudentByRollNo(rollNoToUpdate)
 
-	if err==""{
-		err = studentToBeUpdated.UpdateStudent("Joe", "Pritchett", time.Date(2000, 5, 15, 0, 0, 0, 0, time.UTC), []float64{7.0, 8.5, 10.0}, 2018, 2022)
+	if err == "" {
+		err = studentToBeUpdated.UpdateStudentByParameter("firstname", "Sonia")
 		if err != "" {
-			fmt.Println("Error updating student:", err)
-		} else {
-			fmt.Println("Updated Student",rollNoToUpdate )
-			studentToBeUpdated.PrintDetails()
+			fmt.Println(err)
+
 		}
 
-	}else{
+		err = studentToBeUpdated.UpdateStudentByParameter("yearOfPassing", 2025)
+		if err != "" {
+			fmt.Println(err)
+
+		}
+
+		fmt.Println("Updated Student", rollNoToUpdate)
+		studentToBeUpdated.PrintDetails()
+
+	} else {
 		fmt.Println(err)
 	}
-
 
 	fmt.Println("--------------------------------------------------------------------------------------------")
 	fmt.Printf("DELETE STUDENT BY ROLL NO\n\n")
