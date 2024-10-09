@@ -31,7 +31,7 @@ func main() {
 
 	
 	fmt.Println("--------------------------------------------------------------------------------------------")
-	fmt.Println("READ ALL STUDENTS\n\n")
+	fmt.Printf("READ ALL STUDENTS\n\n")
 	allStudents := student.ReadAllStudents()
 	fmt.Println("All Students:")
 	for _, s := range allStudents {
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	fmt.Println("--------------------------------------------------------------------------------------------")
-	fmt.Println("READ STUDENT BY ROLL NO\n\n")
+	fmt.Printf("READ STUDENT BY ROLL NO\n\n")
 
 	rollNoToRead := 2
 	studentFound, err := student.ReadStudentByRollNo(rollNoToRead)
@@ -52,7 +52,7 @@ func main() {
 	}
 
 	fmt.Println("--------------------------------------------------------------------------------------------")
-	fmt.Println("UPDATE STUDENT BY ROLL NO\n\n")
+	fmt.Printf("UPDATE STUDENT BY ROLL NO\n\n")
 
 	rollNoToUpdate := 1
 	studentToBeUpdated,err:=student.ReadStudentByRollNo(rollNoToUpdate)
@@ -72,7 +72,7 @@ func main() {
 
 
 	fmt.Println("--------------------------------------------------------------------------------------------")
-	fmt.Println("DELETE STUDENT BY ROLL NO\n\n")
+	fmt.Printf("DELETE STUDENT BY ROLL NO\n\n")
 
 	rollNoToDelete := 3
 	err = student.DeleteStudentByRollNo(rollNoToDelete)
@@ -83,7 +83,7 @@ func main() {
 	}
 
 	fmt.Println("--------------------------------------------------------------------------------------------")
-	fmt.Println("READ ALL STUDENTS AGAIN\n\n")
+	fmt.Printf("READ ALL STUDENTS AGAIN\n\n")
 
 	allStudents = student.ReadAllStudents()
 	for _, s := range allStudents {

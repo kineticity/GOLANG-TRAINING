@@ -1,8 +1,8 @@
 package student
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
 var rollNumberCounter = 0 //roll number which increments for each new Student
@@ -10,44 +10,44 @@ var rollNumberCounter = 0 //roll number which increments for each new Student
 var students = []*Student{}
 
 type Student struct {
-	RollNo                 int       
-	Firstname              string
-	Lastname               string
-	Fullname               string    
-	DOB                    time.Time
-	Age                    int       
-	SemesterCGPAArray      []float64
-	FinalCGPA              float64   
-	SemesterGrades         []string  
-	FinalGrade             string    
-	YearOfEnrollment       int
-	YearOfPassing          int
-	NumberOfYearsToGraduate int       
+	RollNo                  int
+	Firstname               string
+	Lastname                string
+	fullname                string
+	DOB                     time.Time
+	age                     int
+	SemesterCGPAArray       []float64
+	finalCGPA               float64
+	semesterGrades          []string
+	finalGrade              string
+	YearOfEnrollment        int
+	YearOfPassing           int
+	numberOfYearsToGraduate int
 }
 
-//CREATE
+// CREATE
 func NewStudent(firstname, lastname string, dob time.Time, semesterCGPAArray []float64, yearOfEnrollment int, yearOfPassing int) (*Student, string) {
-	err:=validateStudentInput(firstname, lastname, dob, semesterCGPAArray, yearOfEnrollment, yearOfPassing)
-	if  err!= "" {
+	err := validateStudentInput(firstname, lastname, dob, semesterCGPAArray, yearOfEnrollment, yearOfPassing)
+	if err != "" {
 		return nil, err
 	}
 
-	rollNumberCounter++ 
+	rollNumberCounter++
 
 	student := &Student{
-		RollNo:                 rollNumberCounter,
-		Firstname:              firstname,
-		Lastname:               lastname,
-		Fullname:               getFullname(firstname, lastname),
-		DOB:                    dob,
-		Age:                    calculateAge(dob),
-		SemesterCGPAArray:      semesterCGPAArray,
-		FinalCGPA:              calculateFinalCGPA(semesterCGPAArray),
-		SemesterGrades:         calculateSemesterGrades(semesterCGPAArray),
-		FinalGrade:             getFinalGrade(calculateFinalCGPA(semesterCGPAArray)),
-		YearOfEnrollment:       yearOfEnrollment,
-		YearOfPassing:          yearOfPassing,
-		NumberOfYearsToGraduate: calculateNumberOfYearsToGraduate(yearOfPassing, yearOfEnrollment),
+		RollNo:                  rollNumberCounter,
+		Firstname:               firstname,
+		Lastname:                lastname,
+		fullname:                getFullname(firstname, lastname),
+		DOB:                     dob,
+		age:                     calculateAge(dob),
+		SemesterCGPAArray:       semesterCGPAArray,
+		finalCGPA:               calculateFinalCGPA(semesterCGPAArray),
+		semesterGrades:          calculateSemesterGrades(semesterCGPAArray),
+		finalGrade:              getFinalGrade(calculateFinalCGPA(semesterCGPAArray)),
+		YearOfEnrollment:        yearOfEnrollment,
+		YearOfPassing:           yearOfPassing,
+		numberOfYearsToGraduate: calculateNumberOfYearsToGraduate(yearOfPassing, yearOfEnrollment),
 	}
 
 	students = append(students, student)
@@ -70,7 +70,7 @@ func validateStudentInput(firstname, lastname string, dob time.Time, semesterCGP
 		}
 	}
 
-	if yearOfEnrollment==0 || yearOfEnrollment > time.Now().Year() {
+	if yearOfEnrollment == 0 || yearOfEnrollment > time.Now().Year() {
 		return "invalid year of enrollment"
 	}
 
@@ -81,14 +81,12 @@ func validateStudentInput(firstname, lastname string, dob time.Time, semesterCGP
 	return ""
 }
 
-
-//READ ALL
+// READ ALL
 func ReadAllStudents() []*Student {
 	return students
 }
 
-
-//READ BY ROLLNO
+// READ BY ROLLNO
 func ReadStudentByRollNo(rollNo int) (*Student, string) {
 	for _, student := range students {
 		if student.RollNo == rollNo {
@@ -98,36 +96,35 @@ func ReadStudentByRollNo(rollNo int) (*Student, string) {
 	return nil, "This student does not exist"
 }
 
-//UPDATE BY ROLLNO
+// UPDATE BY ROLLNO
 func (s *Student) UpdateStudent(firstname, lastname string, dob time.Time, semesterCGPAArray []float64, yearOfEnrollment, yearOfPassing int) string {
 
-	err:=validateStudentInput(firstname, lastname, dob, semesterCGPAArray, yearOfEnrollment, yearOfPassing)
-	if  err!= "" {
+	err := validateStudentInput(firstname, lastname, dob, semesterCGPAArray, yearOfEnrollment, yearOfPassing)
+	if err != "" {
 		return err
 	}
 
 	s.Firstname = firstname
 	s.Lastname = lastname
-	s.Fullname = getFullname(firstname, lastname)
+	s.fullname = getFullname(firstname, lastname)
 	s.DOB = dob
-	s.Age = calculateAge(dob)
+	s.age = calculateAge(dob)
 	s.SemesterCGPAArray = semesterCGPAArray
-	s.FinalCGPA = calculateFinalCGPA(semesterCGPAArray)
-	s.SemesterGrades = calculateSemesterGrades(semesterCGPAArray)
-	s.FinalGrade = getFinalGrade(s.FinalCGPA)
+	s.finalCGPA = calculateFinalCGPA(semesterCGPAArray)
+	s.semesterGrades = calculateSemesterGrades(semesterCGPAArray)
+	s.finalGrade = getFinalGrade(s.finalCGPA)
 	s.YearOfEnrollment = yearOfEnrollment
 	s.YearOfPassing = yearOfPassing
-	s.NumberOfYearsToGraduate = calculateNumberOfYearsToGraduate(yearOfPassing, yearOfEnrollment)
+	s.numberOfYearsToGraduate = calculateNumberOfYearsToGraduate(yearOfPassing, yearOfEnrollment)
 
 	return ""
 }
 
-
-//DELETE BY ROLLNO
+// DELETE BY ROLLNO
 func DeleteStudentByRollNo(rollNo int) string {
 	for i, student := range students {
 		if student.RollNo == rollNo {
-			students = append(students[:i], students[i+1:]...) 
+			students = append(students[:i], students[i+1:]...)
 			return ""
 		}
 	}
@@ -191,23 +188,23 @@ func cgpaToGrade(cgpa float64) string {
 }
 
 func (s *Student) PrintDetails() {
-	if s==nil{
+	if s == nil {
 		fmt.Println("Student object was not created")
-	} else{
+	} else {
 		fmt.Println("Roll No:", s.RollNo)
 		fmt.Println("First Name:", s.Firstname)
 		fmt.Println("Last Name:", s.Lastname)
-		fmt.Println("Full Name:", s.Fullname)
-		fmt.Println("Date of Birth:", s.DOB.Format("2006-01-02")) 
-		fmt.Println("Age:", s.Age)
+		fmt.Println("Full Name:", s.fullname)
+		fmt.Println("Date of Birth:", s.DOB.Format("2006-01-02"))
+		fmt.Println("Age:", s.age)
 		fmt.Println("Semester CGPA Array:", s.SemesterCGPAArray)
-		fmt.Println("Final CGPA:", s.FinalCGPA)
-		fmt.Println("Semester Grades:", s.SemesterGrades)
-		fmt.Println("Final Grade:", s.FinalGrade)
+		fmt.Println("Final CGPA:", s.finalCGPA)
+		fmt.Println("Semester Grades:", s.semesterGrades)
+		fmt.Println("Final Grade:", s.finalGrade)
 		fmt.Println("Year of Enrollment:", s.YearOfEnrollment)
 		fmt.Println("Year of Passing:", s.YearOfPassing)
-		fmt.Println("Number of Years to Graduate:", s.NumberOfYearsToGraduate)
-		fmt.Println() 
+		fmt.Println("Number of Years to Graduate:", s.numberOfYearsToGraduate)
+		fmt.Println()
 	}
-	
+
 }
