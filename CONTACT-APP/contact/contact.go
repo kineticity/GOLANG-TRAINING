@@ -14,8 +14,28 @@ type Contact struct {
 	ContactInfos []*contactinfo.ContactInfo
 }
 
+// Validation function for names
+func validName(name interface{}) error {
+	nameValue, ok := name.(string)
+	if !ok {
+		return errors.New("invalid value type for name")
+	}
+	if nameValue == "" {
+		return errors.New("name cannot be empty")
+	}
+	return nil
+}
+
 // NewContact factory function
-func NewContact(firstname, lastname string, contactid int) *Contact {
+func NewContact(firstname, lastname string, contactid int) (*Contact, error) {
+	err := validName(firstname)
+	if err != nil {
+		return nil, err
+	}
+	err = validName(lastname)
+	if err != nil {
+		return nil, err
+	}
 	contact := &Contact{
 		ContactID:    contactid, // Assuming contacts is a package-level variable or slice
 		Fname:        firstname,
@@ -24,7 +44,7 @@ func NewContact(firstname, lastname string, contactid int) *Contact {
 		ContactInfos: nil,
 	}
 
-	return contact
+	return contact,nil
 }
 
 //UPDATE CONTACT
@@ -60,12 +80,12 @@ func (targetContact *Contact) UpdateContact(contactID int, parameter string, new
 	return nil
 }
 
-//DELETE CONTACT OPERATION (SOFT DELETE)
+// DELETE CONTACT OPERATION (SOFT DELETE)
 func (c *Contact) DeleteContact() error {
 	if !c.IsActive {
 		return errors.New("contact is already inactive")
 	}
-	
+
 	c.IsActive = false
 	return nil
 }
@@ -102,7 +122,7 @@ func (c *Contact) UpdateContactInfo(infoID int, parameter string, newValue inter
 		return errors.New("contact is inactive, cannot update infos")
 	}
 
-	for _, info := range c.ContactInfos { 
+	for _, info := range c.ContactInfos {
 		if info.ContactInfoID == infoID {
 			return info.UpdateContactInfo(parameter, newValue) // actual updatecontactinfo logic in contactinfo package
 		}
@@ -117,7 +137,7 @@ func (c *Contact) PrintDetails() {
 	fmt.Println("Contact Details:")
 
 	for _, detail := range c.ContactInfos {
-		detail.PrintDetails() 
+		detail.PrintDetails()
 	}
 	fmt.Println("^^^^^^^^^^^^^^^^^^^^^^^^^^")
 }

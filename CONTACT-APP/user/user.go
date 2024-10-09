@@ -22,7 +22,16 @@ type User struct {
 }
 
 // Factory ADMIN
-func NewAdmin(firstname, lastname string) *User {
+func NewAdmin(firstname, lastname string) (*User,error) {
+	err:=validName(firstname)
+	if err!=nil{
+		return nil,err
+	}
+	err=validName(lastname)
+	if err!=nil{
+		return nil,err
+	}
+
 	adminUser := &User{
 		UserID:    userID,
 		Firstname: firstname,
@@ -34,11 +43,19 @@ func NewAdmin(firstname, lastname string) *User {
 
 	userID++
 	allAdmin = append(allAdmin, adminUser)
-	return adminUser
+	return adminUser,nil
 }
 
 // Factory STAFF OR CREATE STAFF OPERATION FOR ADMIN
 func (u *User) NewStaff(firstname, lastname string) (*User, error) {
+	err:=validName(firstname)
+	if err!=nil{
+		return nil,err
+	}
+	err=validName(lastname)
+	if err!=nil{
+		return nil,err
+	}
 	if !u.IsAdmin || !u.IsActive {
 		return nil, errors.New("only active Admins can create users")
 	} else {
@@ -156,7 +173,10 @@ func (u *User) CreateContact(firstname, lastname string) error {
 		return errors.New("only active Staff can create contacts")
 	}
 
-	newcontact := contact.NewContact(firstname, lastname, len(u.Contacts))
+	newcontact,err := contact.NewContact(firstname, lastname, len(u.Contacts))
+	if err!=nil{
+		return err
+	}
 	u.Contacts = append(u.Contacts, newcontact)
 
 	return nil

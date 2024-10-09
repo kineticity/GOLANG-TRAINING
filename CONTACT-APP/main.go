@@ -1,15 +1,20 @@
 package main
 
 import (
-	"contactApp/user"
 	"fmt"
+	"contactApp/user"
 )
 
 func main() {
 	// Create Admin user trial
-	admin := user.NewAdmin("Jack", "Dawson")
-	fmt.Println("Admin created:")
-	// admin.PrintDetails()
+	admin,err := user.NewAdmin("Jack", "Dawson")
+	if err==nil{
+		fmt.Println("Admin created:")
+
+	}else{
+		fmt.Println(err)
+
+	}
 
 	// Create Staff user using Admin trial
 	staff1, errr := admin.NewStaff("Rose", "Smith")
