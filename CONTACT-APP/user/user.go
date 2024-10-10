@@ -74,7 +74,7 @@ func (u *User) NewStaff(firstname, lastname string) (*User, error) {
 }
 
 //READ USERS FOR ADMIN
-func (u *User) ReadUsers() ([]*User, error) {
+func (u *User) GetUsers() ([]*User, error) {
 	if !u.IsAdmin || !u.IsActive {
 		return nil, errors.New("only active Admins can read users")
 	}
@@ -93,13 +93,55 @@ func validName(name interface{}) error {
 	return nil
 }
 
-//UPDATE USER BY PARAMETER OPERATION FOR ADMINS
+// VALIDATION FN. FOR UPDATEUSER ARGS
+func validateUserParams(userID int, parameter string, newValue interface{}) error {
+	if userID <= 0 {
+		return errors.New("invalid userID provided")
+	}
+
+	validParameters := map[string]string{
+		"firstname": "string",
+		"lastname":  "string",
+		"isAdmin":   "bool",
+		"isActive":  "bool",
+	}
+
+	expectedType, valid := validParameters[parameter]
+	if !valid {
+		return errors.New("invalid parameter provided, must be one of 'firstname', 'lastname', 'isAdmin', or 'isActive'")
+	}
+
+	switch expectedType {
+	case "string":
+		_, ok := newValue.(string)
+		if !ok || newValue.(string) == "" {
+			return errors.New("invalid value for " + parameter + ": must be a non-empty string")
+		}
+	case "bool":
+		_, ok := newValue.(bool)
+		if !ok {
+			return errors.New("invalid value for " + parameter + ": must be a boolean")
+		}
+	default:
+		return errors.New("unexpected parameter type")
+	}
+
+	return nil
+}
+
+// UpdateUserByParameter method for admins
 func (u *User) UpdateUserByParameter(userID int, parameter string, newValue interface{}) error {
 	// Ensure the user is an admin before allowing updates
 	if !u.IsAdmin {
 		return errors.New("only admins can update staff user values")
 	}
 
+	// Validate the parameters
+	if err := validateUserParams(userID, parameter, newValue); err != nil {
+		return err
+	}
+
+	// Find the target user
 	var targetUser *User
 	for _, user := range allStaff {
 		if user.UserID == userID {
@@ -115,39 +157,23 @@ func (u *User) UpdateUserByParameter(userID int, parameter string, newValue inte
 	// Update the parameters of the target user
 	switch parameter {
 	case "firstname":
-		err := validName(newValue)
-		if err != nil {
-			return err
-		}
 		firstname, _ := newValue.(string)
 		targetUser.Firstname = firstname
 
 	case "lastname":
-		err := validName(newValue)
-		if err != nil {
-			return err
-		}
 		lastname, _ := newValue.(string)
 		targetUser.Lastname = lastname
 
 	case "isAdmin":
-		// Only admins should be allowed to set isAdmin
-		isAdmin, ok := newValue.(bool)
-		if !ok {
-			return errors.New("invalid value type for isAdmin")
-		}
+		isAdmin, _ := newValue.(bool)
 		targetUser.IsAdmin = isAdmin
 
 	case "isActive":
-		// Allow admins to change isActive status
-		isActive, ok := newValue.(bool)
-		if !ok {
-			return errors.New("invalid value type for isActive")
-		}
+		isActive, _ := newValue.(bool)
 		targetUser.IsActive = isActive
 
 	default:
-		return errors.New("invalid parameter")
+		return errors.New("invalid parameter") // This case should be unreachable due to validation
 	}
 
 	return nil
@@ -173,7 +199,15 @@ func (u *User) CreateContact(firstname, lastname string) error {
 		return errors.New("only active Staff can create contacts")
 	}
 
-	newcontact,err := contact.NewContact(firstname, lastname, len(u.Contacts))
+	contactid:=0
+
+	if len(u.Contacts)!=0{
+		contactid=u.Contacts[len(u.Contacts)-1].ContactID
+		contactid++
+	}
+
+
+	newcontact,err := contact.NewContact(firstname, lastname,contactid)
 	if err!=nil{
 		return err
 	}
@@ -184,7 +218,7 @@ func (u *User) CreateContact(firstname, lastname string) error {
 
 
 //READ CONTACTS OPERATION FOR STAFF
-func (u *User) ReadContacts() ([]*contact.Contact, error) {
+func (u *User) GetContacts() ([]*contact.Contact, error) {
 	if u.IsAdmin || !u.IsActive {
 		return nil, errors.New("only active Staff can read contacts")
 	}
@@ -196,10 +230,33 @@ func (u *User) ReadContacts() ([]*contact.Contact, error) {
 }
 
 
-//UPDATE CONTACT OPERATION FOR STAFF
+// VALIDATION FN FOR UPDATEcontact ARGUMENTS
+func validateContactParams(contactID int, parameter string) error {
+	if contactID <= 0 {
+		return errors.New("invalid contactID provided")
+	}
+
+	validParameters := map[string]bool{
+		"firstname":   true,
+		"lastname":   true,
+		"isActive": true,
+	}
+
+	if _, valid := validParameters[parameter]; !valid {
+		return errors.New("invalid parameter provided, must be one of 'email', 'phone', 'address', or 'name'")
+	}
+
+	return nil
+}
+
+// UpdateContact method for User
 func (u *User) UpdateContact(contactID int, parameter string, newValue interface{}) error {
-	if u.IsAdmin || !u.IsActive { 
+	if u.IsAdmin || !u.IsActive {
 		return errors.New("only active staff can update contacts")
+	}
+
+	if err := validateContactParams(contactID, parameter); err != nil {
+		return err
 	}
 
 	var targetContact *contact.Contact
@@ -214,9 +271,8 @@ func (u *User) UpdateContact(contactID int, parameter string, newValue interface
 		return errors.New("contact not found")
 	}
 
-	return targetContact.UpdateContact(contactID, parameter, newValue, u.Contacts) //actual update logic in contact package
+	return targetContact.UpdateContact(contactID, parameter, newValue, u.Contacts)
 }
-
 
 //DELETE CONTACT OPERATION FOR STAFF
 func (u *User) DeleteContact(contactID int) error {
@@ -265,7 +321,7 @@ func (u *User) CreateContactInfo(contactID int, infoType, value string) error {
 }
 
 // READ CONTACT INFO OPERATION FOR STAFF
-func (u *User) ReadContactInfo(contactID int, infoID int) (*contactinfo.ContactInfo, error) {
+func (u *User) GetContactInfo(contactID int, infoID int) (*contactinfo.ContactInfo, error) {
 	if u.IsAdmin || !u.IsActive {
 		return nil, errors.New("only active Staff can read contact details")
 	}
@@ -281,13 +337,39 @@ func (u *User) ReadContactInfo(contactID int, infoID int) (*contactinfo.ContactI
 		return nil, errors.New("contact not found")
 	}
 
-	return targetContact.ReadContactInfo(infoID)
+	return targetContact.GetContactInfo(infoID)
 }
 
-//UPDATE CONTACT INFO OPERATION FOR STAFF
+// contactinfo validation
+func validateContactInfoParams(contactID int, infoID int, parameter string) error {
+	if contactID < 0 {
+		return errors.New("invalid contactID provided")
+	}
+
+	if infoID < 0 {
+		return errors.New("invalid infoID provided")
+	}
+
+	validParameters := map[string]bool{
+		"type":   true,
+		"value":   true,
+	}
+
+	if _, valid := validParameters[parameter]; !valid {
+		return errors.New("invalid parameter provided, must be one of 'email', 'phone', or 'address'")
+	}
+
+	return nil
+}
+
+// UPDATE CONTACT INFO FOR STAFF
 func (u *User) UpdateContactInfo(contactID int, infoID int, parameter string, newValue interface{}) error {
 	if u.IsAdmin || !u.IsActive {
 		return errors.New("only active Staff can update contact infos")
+	}
+
+	if err := validateContactInfoParams(contactID, infoID, parameter); err != nil {
+		return err
 	}
 
 	var targetContact *contact.Contact
@@ -303,7 +385,6 @@ func (u *User) UpdateContactInfo(contactID int, infoID int, parameter string, ne
 	}
 
 	return targetContact.UpdateContactInfo(infoID, parameter, newValue)
-
 }
 
 

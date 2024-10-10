@@ -95,15 +95,20 @@ func (c *Contact) CreateContactInfo(infoType, value string) error {
 	if !c.IsActive {
 		return errors.New("contact is not active, cannot add details")
 	}
+	contactinfoid:=0
 
-	newInfo := contactinfo.NewContactInfo(infoType, value, len(c.ContactInfos)) //<--Actual contactinfo object creation logic in contactinfo package
+	if len(c.ContactInfos)!=0{
+		contactinfoid=c.ContactInfos[len(c.ContactInfos)-1].ContactInfoID
+		contactinfoid++
+	}
+	newInfo := contactinfo.NewContactInfo(infoType, value, contactinfoid) //<--Actual contactinfo object creation logic in contactinfo package
 
 	c.ContactInfos = append(c.ContactInfos, newInfo)
 	return nil
 }
 
 // READ CONTACT INFO
-func (c *Contact) ReadContactInfo(infoID int) (*contactinfo.ContactInfo, error) {
+func (c *Contact) GetContactInfo(infoID int) (*contactinfo.ContactInfo, error) {
 	if !c.IsActive {
 		return nil, errors.New("contact is inactive, cannot read details")
 	}

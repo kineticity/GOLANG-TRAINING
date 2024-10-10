@@ -36,7 +36,7 @@ func main() {
 
 	// Admin reads all staff trial
 	fmt.Println("\nAdmin reading all STAFF:")
-	users, err := admin.ReadUsers()
+	users, err := admin.GetUsers()
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
@@ -56,7 +56,7 @@ func main() {
 
 	// Admin reads all staff trial
 	fmt.Println("\nAdmin reading all STAFF:")
-	users, err = admin.ReadUsers()
+	users, err = admin.GetUsers()
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
@@ -76,7 +76,7 @@ func main() {
 
 	// Admin reads all users
 	fmt.Println("\nAdmin reading all STAFF:")
-	users, err = admin.ReadUsers()
+	users, err = admin.GetUsers()
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
@@ -105,7 +105,7 @@ func main() {
 	}
 
 	// Staff Reads contact
-	contacts, err := staff1.ReadContacts()
+	contacts, err := staff1.GetContacts()
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
@@ -126,7 +126,7 @@ func main() {
 	}
 
 	// Staff Read contact
-	contacts, err = staff1.ReadContacts()
+	contacts, err = staff1.GetContacts()
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
@@ -143,7 +143,7 @@ func main() {
 	}
 
 	// Staff Reads contact
-	contacts, err = staff1.ReadContacts()
+	contacts, err = staff1.GetContacts()
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
@@ -160,7 +160,7 @@ func main() {
 	}
 
 	// Staff Read contact
-	contacts, err = staff1.ReadContacts()
+	contacts, err = staff1.GetContacts()
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
@@ -169,7 +169,7 @@ func main() {
 	}
 
 	// staff read contact info
-	info, err := staff1.ReadContactInfo(1, 0) // Read the info id 0 with contactID 1
+	info, err := staff1.GetContactInfo(1, 0) // Read the info id 0 with contactID 1
 	if err != nil {
 		fmt.Println("Error reading contact detail:", err)
 	} else {
@@ -192,7 +192,7 @@ func main() {
 	}
 
 	// staff read the contact info
-	info, err = staff1.ReadContactInfo(1, 0) // Read the detail with ID 1
+	info, err = staff1.GetContactInfo(1, 0) // Read the detail with ID 1
 	if err != nil {
 		fmt.Println("Error reading contact detail:", err)
 	} else {
