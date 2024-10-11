@@ -6,8 +6,8 @@ import (
 
 func main() {
 	var g1 Game = NewTicTacToe("Manny", "Gloria")
-	
-	g1.play(0,2)
+
+	g1.play(0, 2)
 	g1.play(4)
 	g1.play(6)
 	g1.play(5)
@@ -25,19 +25,19 @@ type TicTacToe struct {
 	player1, player2 Player
 	board            Board
 	currentPlayer    Player
-	gameOver         bool 
+	gameOver         bool
 }
 
-func NewTicTacToe(player1Name, player2Name string) *TicTacToe { //tictactoe factory
+func NewTicTacToe(player1Name, player2Name string) *TicTacToe { //tictactoe factory function
 	player1 := Player{name: player1Name, symbol: "X"}
 	player2 := Player{name: player2Name, symbol: "O"}
 	board := Board{cells: make([]string, 9)}
 	return &TicTacToe{
-		player1:      player1,
-		player2:      player2,
-		board:        board,
+		player1:       player1,
+		player2:       player2,
+		board:         board,
 		currentPlayer: player1,
-		gameOver:     false,
+		gameOver:      false,
 	}
 }
 
@@ -69,13 +69,13 @@ func (g *TicTacToe) play(parameter ...interface{}) {
 
 	if g.board.checkWin() {
 		fmt.Printf("%s wins!\n", g.currentPlayer.name)
-		g.gameOver = true 
+		g.gameOver = true
 		return
 	}
 
 	if g.board.isDraw() {
 		fmt.Println("It's a draw!")
-		g.gameOver = true 
+		g.gameOver = true
 		return
 	}
 
@@ -114,7 +114,7 @@ func (b *Board) printBoard() {
 	}
 }
 
-//POSITION SHOULD BE VALID (0-8) CELL SHOULD BE EMPTY 
+// POSITION SHOULD BE VALID (0-8) CELL SHOULD BE EMPTY
 func (b *Board) isValidMove(pos int) bool {
 	return pos >= 0 && pos < 9 && b.cells[pos] == ""
 }
@@ -127,7 +127,7 @@ func (b *Board) checkWin() bool {
 	winPositions := [][]int{
 		{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, // Rows
 		{0, 3, 6}, {1, 4, 7}, {2, 5, 8}, // Columns
-		{0, 4, 8}, {2, 4, 6},            // Diagonals
+		{0, 4, 8}, {2, 4, 6}, // Diagonals
 	}
 
 	for _, positions := range winPositions {
