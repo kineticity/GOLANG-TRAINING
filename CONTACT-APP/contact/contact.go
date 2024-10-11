@@ -135,6 +135,25 @@ func (c *Contact) UpdateContactInfo(infoID int, parameter string, newValue inter
 	return errors.New("contact info not found")
 }
 
+
+//HARD DELETE CONTACT INFO
+func (c *Contact) DeleteContactInfo(infoID int) error {
+	var found bool
+	for i, info := range c.ContactInfos {
+		if info.ContactInfoID == infoID {
+			c.ContactInfos = append(c.ContactInfos[:i], c.ContactInfos[i+1:]...)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return errors.New("contact information not found")
+	}
+
+	return nil
+}
+
 func (c *Contact) PrintDetails() {
 	fmt.Printf("ContactID: %d\n", c.ContactID)
 	fmt.Printf("Name: %s %s\n", c.Fname, c.Lname)

@@ -7,7 +7,7 @@ import (
 func main() {
 	var g1 Game = NewTicTacToe("Manny", "Gloria")
 	
-	g1.play(0)
+	g1.play(0,2)
 	g1.play(4)
 	g1.play(6)
 	g1.play(5)
@@ -52,7 +52,7 @@ func (g *TicTacToe) play(parameter ...interface{}) {
 		return
 	}
 
-	pos, ok := parameter[0].(int) 
+	pos, ok := parameter[0].(int) //validate if parameter integer between0 and 8
 	if !ok || pos < 0 || pos > 8 {
 		fmt.Println("Invalid move! Please enter a number between 0 and 8.")
 		return

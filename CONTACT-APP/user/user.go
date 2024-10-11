@@ -387,6 +387,32 @@ func (u *User) UpdateContactInfo(contactID int, infoID int, parameter string, ne
 	return targetContact.UpdateContactInfo(infoID, parameter, newValue)
 }
 
+// DELETE CONTACTINFO OPERATION FOR STAFF
+func (u *User) DeleteContactInfo(contactID, infoID int) error {
+	if u.IsAdmin || !u.IsActive { //make fn
+		return errors.New("only active staff can delete contact information")
+	}
+
+	var targetContact *contact.Contact //make fn
+	for _, c := range u.Contacts {
+		if c.ContactID == contactID {
+			targetContact = c
+			break
+		}
+	}
+
+	if targetContact == nil {
+		return errors.New("contact not found")
+	}
+
+	err := targetContact.DeleteContactInfo(infoID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 
 func (u *User) PrintDetails() {
 	fmt.Printf("UserID: %d\n", u.UserID)
