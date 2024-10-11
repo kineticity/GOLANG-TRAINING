@@ -126,13 +126,11 @@ func (c *Customer) UpdateCustomer(customerID int, attribute string, newValue int
 	}
 }
 
-// DeleteNonAdminCustomer marks a non-admin customer as inactive
 func (c *Customer) DeleteCustomer(customerID int) error { //DELETE CUSTOMER
 	if !c.IsAdmin {
 		return errors.New("only admins can delete non-admin customers")
 	}
 
-	// Find the non-admin customer by ID
 	for _, customer := range customers {
 		if customer.CustomerID == customerID && !customer.IsAdmin && customer.IsActive {
 			customer.IsActive = false // Mark as inactive
@@ -143,7 +141,6 @@ func (c *Customer) DeleteCustomer(customerID int) error { //DELETE CUSTOMER
 	return errors.New("non-admin customer not found or already inactive")
 }
 
-// CreateAccount allows the customer to create a new account
 func (c *Customer) CreateAccount(initialBalance float64) error { //CREATE ACCOUNT
 	if c.IsAdmin {
 		return errors.New("admins cannot create accounts")
@@ -155,25 +152,16 @@ func (c *Customer) CreateAccount(initialBalance float64) error { //CREATE ACCOUN
 		return errors.New("initial balance must be at least Rs. 1000")
 	}
 
-	// // Determine the next account ID
-	// accountID := 1
-	// if len(c.Accounts) > 0 {
-	// 	accountID = c.Accounts[len(c.Accounts)-1].AccountID + 1
-	// }
-
-	// Create a new account using the factory function
 	newAccount, err := account.NewAccount(initialBalance)
 	if err != nil {
 		return err
 	}
 
-	// Append the new account to the customer's accounts
 	c.Accounts = append(c.Accounts, newAccount)
-	c.UpdateTotalBalance() // Update total balance after adding the new account
+	c.UpdateTotalBalance() 
 	return nil
 }
 
-// GetAccountByID retrieves an account by its ID
 func (c *Customer) GetAccountByID(accountID int) (*account.Account, error) { //GETBYID
 	if c.IsAdmin {
 		return nil, errors.New("admins cannot retrieve accounts")
@@ -182,11 +170,9 @@ func (c *Customer) GetAccountByID(accountID int) (*account.Account, error) { //G
 		return nil, errors.New("customer is not active, cannot retrieve account")
 	}
 
-	// Use the account package to get the account by ID
 	return account.GetAccountByID(accountID, c.Accounts)
 }
 
-// GetAllAccounts retrieves all active accounts of the customer
 func (c *Customer) GetAllAccounts() ([]*account.Account, error) { //GETALL
 	if c.IsAdmin {
 		return nil, errors.New("admins cannot retrieve accounts")
@@ -195,11 +181,9 @@ func (c *Customer) GetAllAccounts() ([]*account.Account, error) { //GETALL
 		return nil, errors.New("customer is not active, cannot retrieve accounts")
 	}
 
-	// Use the account package to get all accounts
 	return c.Accounts, nil
 }
 
-// UpdateAccount updates the account's attributes
 func (c *Customer) UpdateAccount(accountID int, attribute string, newValue interface{}) error { //UPDATE ACCOUNT
 	if c.IsAdmin {
 		return errors.New("admins cannot update accounts")
@@ -208,7 +192,6 @@ func (c *Customer) UpdateAccount(accountID int, attribute string, newValue inter
 		return errors.New("customer is not active, cannot update account")
 	}
 
-	// Find the account by ID
 	var acc *account.Account
 	for _, account := range c.Accounts {
 		if account.AccountID == accountID {
@@ -220,11 +203,9 @@ func (c *Customer) UpdateAccount(accountID int, attribute string, newValue inter
 		return errors.New("account not found or inactive")
 	}
 
-	// Call the update method in the account package
 	return acc.UpdateAccount(attribute, newValue)
 }
 
-// DeleteAccount marks an account as inactive
 func (c *Customer) DeleteAccount(accountID int) error { //DELETE ACCOUNT
 	if c.IsAdmin {
 		return errors.New("admins cannot delete accounts")
@@ -235,8 +216,8 @@ func (c *Customer) DeleteAccount(accountID int) error { //DELETE ACCOUNT
 
 	for _, acc := range c.Accounts {
 		if acc.AccountID == accountID {
-			acc.Deactivate() // Call the deactivate method from account package
-			c.UpdateTotalBalance() // Update total balance after deletion
+			acc.Deactivate() 
+			c.UpdateTotalBalance() 
 			fmt.Printf("Account ID %d has been deleted.\n", accountID)
 			return nil
 		}
@@ -244,7 +225,6 @@ func (c *Customer) DeleteAccount(accountID int) error { //DELETE ACCOUNT
 	return errors.New("account not found")
 }
 
-// UpdateTotalBalance updates the total balance of the customer
 func (c *Customer) UpdateTotalBalance() {
 	total := 0.0
 	for _, acc := range c.Accounts {
@@ -255,7 +235,6 @@ func (c *Customer) UpdateTotalBalance() {
 	c.TotalBalance = total
 }
 
-// CreateBank allows the admin to create a new bank and add it to the global banks slice
 func (c *Customer) CreateBank(bankID int, fullName, abbreviation string) error { //CREATE BANK
 	if !c.IsAdmin {
 		return errors.New("only admin can create banks")
@@ -266,17 +245,14 @@ func (c *Customer) CreateBank(bankID int, fullName, abbreviation string) error {
 		return err
 	}
 
-	// bank.AddBank(newBank)
 	return nil
 }
 
-// ReadAllBanks allows the admin to read all banks
 func (c *Customer) GetAllBanks() ([]*bank.Bank, error) { //GETALL
 	if !c.IsAdmin {
 		return nil, errors.New("only admin can read all banks")
 	}
 
-	// Fetch all banks from the bank package
 	banks := bank.GetAllBanks()
 
 	if len(banks) == 0 {
@@ -286,13 +262,11 @@ func (c *Customer) GetAllBanks() ([]*bank.Bank, error) { //GETALL
 	return banks, nil
 }
 
-// ReadBankByID allows the admin to read a bank by its ID
 func (c *Customer) GetBankByID(bankID int) (*bank.Bank, error) { //GETBYID
 	if !c.IsAdmin {
 		return nil, errors.New("only admin can read a bank by ID")
 	}
 
-	// Fetch the bank by ID from the bank package
 	b, err := bank.GetBankByID(bankID)
 	if err != nil {
 		return nil, err
@@ -301,7 +275,6 @@ func (c *Customer) GetBankByID(bankID int) (*bank.Bank, error) { //GETBYID
 	return b, nil
 }
 
-// UpdateBank allows the admin to update a specific field of the bank
 func (c *Customer) UpdateBank(bankID int, param string, newValue string) error { //UPDATE BANK
 	if !c.IsAdmin {
 		return errors.New("only admin can update banks")
@@ -321,7 +294,7 @@ func (c *Customer) UpdateBank(bankID int, param string, newValue string) error {
 	return nil
 }
 
-// DeleteBank allows the admin to deactivate a bank from the global banks slice //DELETE BANK BY ID
+//DELETE BANK BY ID
 func (c *Customer) DeleteBank(bankID int) error {
 	if !c.IsAdmin {
 		return errors.New("only admin can delete banks")
@@ -335,7 +308,6 @@ func (c *Customer) DeleteBank(bankID int) error {
 	return nil
 }
 
-// Deposit allows the customer to deposit money into an account
 func (c *Customer) Deposit(accountNo int, amount float64) error {
 	if c.IsAdmin {
 		return errors.New("admins cannot deposit money")
@@ -344,7 +316,6 @@ func (c *Customer) Deposit(accountNo int, amount float64) error {
 		return errors.New("inactive customer cannot perform transactions")
 	}
 
-	// Get account by account ID
 	acc, err := account.GetAccountByID(accountNo,c.Accounts)
 	if err != nil {
 		return err
@@ -353,7 +324,6 @@ func (c *Customer) Deposit(accountNo int, amount float64) error {
 		return errors.New("cannot deposit to an inactive account")
 	}
 
-	// Perform deposit
 	err = acc.Deposit(amount)
 	if err != nil {
 		return err
@@ -363,7 +333,6 @@ func (c *Customer) Deposit(accountNo int, amount float64) error {
 	return nil
 }
 
-// Withdraw allows the customer to withdraw money from an account
 func (c *Customer) Withdraw(accountNo int, amount float64) error {
 	if c.IsAdmin {
 		return errors.New("admins cannot withdraw money")
@@ -372,7 +341,6 @@ func (c *Customer) Withdraw(accountNo int, amount float64) error {
 		return errors.New("inactive customer cannot perform transactions")
 	}
 
-	// Get account by account ID
 	acc, err := account.GetAccountByID(accountNo,c.Accounts)
 	if err != nil {
 		return err
@@ -381,7 +349,6 @@ func (c *Customer) Withdraw(accountNo int, amount float64) error {
 		return errors.New("cannot withdraw from an inactive account")
 	}
 
-	// Perform withdraw
 	err = acc.Withdraw(amount)
 	if err != nil {
 		return err
@@ -391,7 +358,6 @@ func (c *Customer) Withdraw(accountNo int, amount float64) error {
 	return nil
 }
 
-// Transfer transfers money between two accounts, either the customer's own accounts or between two different customers.
 func (c *Customer) Transfer(fromAccountNo, toAccountNo int, amount float64) error {
 	if c.IsAdmin {
 		return errors.New("admins cannot transfer money between accounts")
@@ -400,33 +366,27 @@ func (c *Customer) Transfer(fromAccountNo, toAccountNo int, amount float64) erro
 		return errors.New("customer is inactive, cannot perform transfers")
 	}
 
-	// Get the 'from' account (must belong to the current customer)
 	fromAcc, err := account.GetAccountByID(fromAccountNo,c.Accounts)
 	if err != nil {
 		return err
 	}
 
-	// Attempt to get the 'to' account from the current customer's accounts
 	toAcc, err := account.GetAccountByID(toAccountNo,c.Accounts)
 	if err == nil {
-		// Self-transfer (if 'to' account is found in the current customer's accounts)
 		if !toAcc.IsActive {
 			return errors.New("destination account is inactive")
 		}
 	} else {
-		// If the 'to' account is not found in the current customer's accounts, treat it as a transfer to another customer
 		toAcc, err = account.GetGlobalAccountByID(toAccountNo)
 		if err != nil {
 			return errors.New("destination account not found or inactive")
 		}
 	}
 
-	// Ensure both accounts are active
 	if !fromAcc.IsActive || !toAcc.IsActive {
 		return errors.New("both accounts must be active")
 	}
 
-	// Perform the transfer
 	err = fromAcc.Withdraw(amount)
 	if err != nil {
 		return err
