@@ -2,144 +2,150 @@ package main
 
 import (
 	"fmt"
-	"bankingApp/account"
+	// "bankingApp/account"
+	"bankingApp/bank"
 	"bankingApp/customer"
 )
 
 func main() {
-	// Create an Admin customer
-	admin, err := customer.NewAdmin("Admin", "User")
+	// Create an admin customer
+	admin, err := customer.NewAdmin("Alice", "Smith")
 	if err != nil {
-		fmt.Println("Admin was not created:",err)
+		fmt.Println("Error creating admin:", err)
+		return
 	}
-	fmt.Println("Admin created successfully")
+	fmt.Println("Admin created:", admin.GetFirstName(), admin.GetLastName())
 
-	// Admin creates a new bank
-	err = admin.CreateBank(1, "National Bank", "NB")
+	// Create a new bank
+	bank1, err := bank.NewBank("National Bank", "NB")
 	if err != nil {
-		fmt.Println("Bank was not created:",err)
+		fmt.Println("Error creating bank:", err)
+		return
 	}
-	fmt.Println("Bank created successfully")
+	fmt.Println("Bank created:", bank1.GetFullName())
 
-	//Admin creates new customers
-	customer1, err := admin.NewCustomer("John", "Doe")
+	bank2, err := bank.NewBank("American Bank", "AB")
 	if err != nil {
-		fmt.Println("Customer was not created:",err)
+		fmt.Println("Error creating bank:", err)
+		return
 	}
-	admin.UpdateCustomer(2,"firstName","Jack")
-	c,_:=admin.GetCustomerByID(2)
-	fmt.Println(c.FirstName)
-	// admin.DeleteCustomer(2)
-	// _,err=admin.GetCustomerByID(2)
-	// if err!=nil{
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(c.FirstName)
+	fmt.Println("Bank created:", bank1.GetFullName())
 
-	customer2, err := admin.NewCustomer("Jane", "Smith")
+	// Create a new customer by admin
+	newCustomer, err := admin.NewCustomer("John", "Doe")
 	if err != nil {
-		fmt.Println("Error creating customer2:",err)
+		fmt.Println("Error creating customer:", err)
+		return
 	}
-	fmt.Println("Customer created successfully",customer2.FirstName)
+	fmt.Println("New customer created:", newCustomer.GetFirstName(), newCustomer.GetLastName())
 
-	//Customer creates accounts
-	err = customer1.CreateAccount(5000) //customer 1 account 1
+	// Create an account for the new customer
+	err = newCustomer.CreateAccount(1500, bank1.GetBankID()) //Account 1 of newCustomer
 	if err != nil {
-	fmt.Println("Customer 1 Account 1 not created",customer1.FirstName)
+		fmt.Println("Error creating account:", err)
+		return
 	}
-	err = customer1.CreateAccount(10000) //customer 1 account 2
-	if err != nil {
-	fmt.Println("Customer 1 account 2 not created",customer1.FirstName)
-	}
-	err = customer2.CreateAccount(7000) //customer 2 account 3
-	if err != nil {
-		fmt.Println("Customer 2 account 1 not created:",err)
-	}
+	fmt.Println("Account created for customer:", newCustomer.GetFirstName())
 
-	//customer updates accounts
-	err=customer1.UpdateAccount(1,"isActive",false)
-	if err!=nil{
-		fmt.Println(err)
-	}else{
-		a1,_:=customer1.GetAccountByID(1)
-		fmt.Println(a1.IsActive)
-
-	}
-
-
-	// Customer deposits money
-	err = customer1.Deposit(1, 2000)
+	err = newCustomer.CreateAccount(2000, bank1.GetBankID()) //Account 2 of newCustomer
 	if err != nil {
-		fmt.Println("Error in deposit for customer1:",err)
+		fmt.Println("Error creating account:", err)
+		return
 	}
-	err = customer2.Deposit(3, 3000)
-	if err != nil {
-		fmt.Println("Error in deposit for customer2:",err)
-	}
-	fmt.Println("Deposit operation successful")
+	fmt.Println("Account created for customer:", newCustomer.GetFirstName())
 
-	//  Customer withdraws money
-	err = customer1.Withdraw(1, 1000)
+	err = newCustomer.CreateAccount(2000, bank2.GetBankID()) //Account 3 of newCustomer in different bank
 	if err != nil {
-		fmt.Println("Error in withdrawal for customer1:",err)
+		fmt.Println("Error creating account:", err)
+		return
 	}
-	err = customer2.Withdraw(3, 1500)
-	if err != nil {
-		fmt.Println("Error in withdrawal for customer2:",err)
-	}
-	fmt.Println("Withdrawal operation successful")
+	fmt.Println("Account created for customer:", newCustomer.GetFirstName())
 
-	// Transfer between accounts (self or another customer)
-	err = customer1.Transfer(1, 2, 500) // Self-transfer within customer1's accounts acc 1 6000->5500 acc2 10000->10500 ,total customer1->16000
+	// Retrieve the account by ID
+	accountID := newCustomer.GetAccounts()[0].GetAccountID()
+	acc, err := newCustomer.GetAccountByID(accountID)
 	if err != nil {
-		fmt.Println("Error in self transfer for customer1:",err)
+		fmt.Println("Error retrieving account:", err)
+		return
 	}
-	acc1,_:=account.GetGlobalAccountByID(1)
-	fmt.Println("Account 1 balance is now:",acc1.Balance)
-	acc2,_:=account.GetGlobalAccountByID(2)
-	fmt.Println("Account 2 balance is now:",acc2.Balance)
-	err = customer1.Transfer(1, 3, 1000) // Transfer to customer2's account acc1->5500->4500 acc3->8500->9500
-	if err != nil {
-		fmt.Println("Error in transfer from customer 1 to customer2:",err)
-	}
-	fmt.Println("Transfer operations successful")
-	acc1,_=account.GetGlobalAccountByID(1)
-	fmt.Println("Account 1 balance is now:",acc1.Balance)
-	acc3,_:=account.GetGlobalAccountByID(3)
-	fmt.Println("Account 3 balance is now:",acc3.Balance)
+	fmt.Printf("Retrieved Account ID: %d, Balance: %.2f\n", acc.GetAccountID(), acc.GetBalance())
 
-	fmt.Println("Customer 1 balance:",customer1.TotalBalance) //should be 15000
-
-	// Admin updates bank details
-	err = admin.UpdateBank(1, "bankName", "Updated National Bank")
+	// Deposit money into the account
+	err = newCustomer.Deposit(accountID, 500)
 	if err != nil {
-		fmt.Println("Error updating bank details:",err)
-	}
-	fmt.Println("Bank details updated successfully")
-
-	// Admin deletes customer2
-	err = admin.DeleteCustomer(2)
-	if err != nil {
-		fmt.Println("Error deleting customer2:",err)
-	}
-	fmt.Println("Customer2 deleted successfully")
-
-	// Retrieve and display all banks
-	banks, err := admin.GetAllBanks()
-	if err != nil {
-		fmt.Println("Error retrieving banks:",err)
-	}
-	for _, b := range banks {
-		fmt.Printf("Bank ID: %d, Name: %s, Abbreviation: %s, IsActive: %t\n", b.BankID, b.FullName, b.Abbreviation, b.IsActive)
+		fmt.Println("Error depositing:", err)
+		return
 	}
 
-	// Retrieve and display all customers (non-admin)
+	// Withdraw money from the account
+	err = newCustomer.Withdraw(accountID, 200)
+	if err != nil {
+		fmt.Println("Error withdrawing:", err)
+		return
+	}
+
+	// Transfer money between accounts
+	if len(newCustomer.GetAccounts()) > 1 { //self transfer
+		anotherAccountID := newCustomer.GetAccounts()[1].GetAccountID()
+		fmt.Println(anotherAccountID)
+		err = newCustomer.Transfer(accountID, anotherAccountID, 100)
+		if err != nil {
+			fmt.Println("Error transferring:", err)
+			return
+		}
+
+		anotherAccountIDInAnotherBank := newCustomer.GetAccounts()[2].GetAccountID()
+		anotherBankIDInAnotherBank := newCustomer.GetAccounts()[2].GetBankID()
+
+		// fmt.Println(anotherAccountIDInAnotherBank)
+		fmt.Println(anotherBankIDInAnotherBank)
+
+
+		err = newCustomer.Transfer(accountID, anotherAccountIDInAnotherBank, 300)
+		if err != nil {
+			fmt.Println("Error transferring:", err)
+			return
+		}
+
+		fmt.Println(anotherBankIDInAnotherBank)
+
+	}
+
+	// Print the passbook
+	passbook := acc.GetPassbook() // Assuming there's a method to get the passbook
+	passbook.PrintPassbook()
+
+	// List all customers (admin functionality)
 	customers, err := admin.GetCustomers()
 	if err != nil {
-		fmt.Println("Error retrieving customers:",err)
+		fmt.Println("Error retrieving customers:", err)
+		return
 	}
+	fmt.Println("List of customers:")
 	for _, c := range customers {
-		fmt.Printf("Customer ID: %d, Name: %s %s, Total Balance: %.2f, IsActive: %t\n", c.CustomerID, c.FirstName, c.LastName, c.TotalBalance, c.IsActive)
+		fmt.Printf("%s %s\n", c.GetFirstName(), c.GetLastName())
 	}
+
+	// Delete the customer
+	err = admin.DeleteCustomer(newCustomer.GetCustomerID())
+	if err != nil {
+		fmt.Println("Error deleting customer:", err)
+		return
+	}
+	fmt.Println("Customer deleted:", newCustomer.GetFirstName(), newCustomer.GetLastName(),newCustomer.GetIsActive())
+
+
+	sbi, _ := bank.NewBank("State Bank of India", "SBI")
+	icici, _ := bank.NewBank("ICICI Bank", "ICICI")
+
+	sbi.LendTo("ICICI", 1000, 4)
+	sbi.ReceiveFrom("ICICI", 500, 4)
+
+	fmt.Println("SBI Ledger:")
+	sbi.PrintBankLedger()
+
+	fmt.Println("\nICICI Ledger:")
+	icici.PrintBankLedger() 
 }
+
 
