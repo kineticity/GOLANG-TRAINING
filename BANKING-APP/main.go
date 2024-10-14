@@ -17,14 +17,23 @@ func main() {
 	fmt.Println("Admin created:", admin.GetFirstName(), admin.GetLastName())
 
 	// Create a new bank
+
 	bank1, err := bank.NewBank("National Bank", "NB")
 	if err != nil {
 		fmt.Println("Error creating bank:", err)
 		return
 	}
 	fmt.Println("Bank created:", bank1.GetFullName())
+	err = admin.CreateBank("American Bank", "AB")
+	if err!=nil{
+		fmt.Println(err)
+	} 
+		bank2,_:=bank.GetBankByID(2)
+		bank2.Read()
+	
 
-	bank2, err := bank.NewBank("American Bank", "AB")
+
+	// bank2, err := bank.NewBank("American Bank", "AB")
 	if err != nil {
 		fmt.Println("Error creating bank:", err)
 		return
@@ -175,7 +184,8 @@ func main() {
 		fmt.Println("Deleted successfully")
 	}
 
-	// fmt.Println(err)
+	fmt.Println("Trying to look for deleted file")
+
 	bank,err=admindemo.GetBankByID(5)
 	if err!=nil{
 		fmt.Println(err)
@@ -183,8 +193,14 @@ func main() {
 		fmt.Println(bank.Read())
 	}
 
+	fmt.Println()
+
+	fmt.Println("Printing all active banks")
+
 	bankopobj,_:=admindemo.GetAllBanks()
-	fmt.Println(bankopobj[0].GetFullName())
-	// fmt.Println(bank.Read())
+	for _,bank:=range bankopobj{
+		fmt.Println(bank.Read())
+	}
+
 }
 

@@ -21,6 +21,7 @@ type BankOperations interface{
 	Read() string
 	Delete()
 	GetFullName() string
+	GetBankID() int
 	
 
 }
@@ -42,6 +43,7 @@ func NewBank(fullName, abbreviation string) (*Bank, error) {
 	if err := validation.ValidateNonEmptyString("Abbreviation", abbreviation); err != nil {
 		return nil, err
 	}
+	tempBankLedger:=NewBankLedger()
 
 	b := &Bank{
 		bankID:       bankid,
@@ -49,7 +51,7 @@ func NewBank(fullName, abbreviation string) (*Bank, error) {
 		abbreviation: abbreviation,
 		isActive:     true,
 		accounts:     []*account.Account{},
-		ledger:NewBankLedger(),
+		ledger:tempBankLedger,
 	}
 
 	bankid++
@@ -102,7 +104,7 @@ func GetAllBanks() []BankOperations { //GETALL
 	return activeBanks
 }
 
-func GetBankByID(bankID int) (*Bank, error) { //GETBYID
+func GetBankByID(bankID int) (BankOperations, error) { //GETBYID
 	for i := range banks {
 		if banks[i].GetBankID() == bankID && banks[i].GetIsActive() {
 			return &banks[i], nil

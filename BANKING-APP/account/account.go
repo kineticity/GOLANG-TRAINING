@@ -1,47 +1,43 @@
 package account
 
 import (
+	validation "bankingApp/validations"
 	"errors"
 	"time"
-	"bankingApp/validations"
 )
 
 type Account struct {
 	accountID int
 	balance   float64
 	isActive  bool
-	bankid int
-	passbook  *Passbook 
+	bankid    int
+	passbook  *Passbook
 }
-
-
 
 var allAccounts []*Account
 var accountid int = 1
 
-func NewAccount(initialBalance float64,bankid int) (*Account, error) { //bankid is validated in customer's createaccount
+func NewAccount(initialBalance float64, bankid int) (*Account, error) { //bankid is validated in customer's createaccount
 	if initialBalance < 1000 {
 		return nil, errors.New("initial balance must be at least Rs. 1000")
 	}
-	passbook,err:=NewPassbook(initialBalance,accountid,bankid)
-	if err!=nil{
-		return nil,err
+	passbook, err := NewPassbook(initialBalance, accountid, bankid)
+	if err != nil {
+		return nil, err
 	}
 
 	account := &Account{
 		accountID: accountid,
 		balance:   initialBalance,
 		isActive:  true,
-		bankid:bankid,
+		bankid:    bankid,
 		passbook:  passbook,
 	}
 	accountid++
 	allAccounts = append(allAccounts, account)
 
-
 	return account, nil
 }
-
 
 // Getter Setter fns
 func (a *Account) GetAccountID() int {
@@ -84,8 +80,7 @@ func (a *Account) SetPassbook(passbook *Passbook) { //YAGNI
 	a.passbook = passbook
 }
 
-
-func GetAccountByID(accountID int,accounts []*Account) (*Account, error) { //GETBYID
+func GetAccountByID(accountID int, accounts []*Account) (*Account, error) { //GETBYID
 	for _, acc := range accounts { //DRY?
 		if acc.GetAccountID() == accountID && acc.GetIsActive() {
 			return acc, nil
@@ -94,11 +89,10 @@ func GetAccountByID(accountID int,accounts []*Account) (*Account, error) { //GET
 	return nil, errors.New("account not found or inactive")
 }
 
-func GetAllAccounts()[]*Account{
+func GetAllAccounts() []*Account {
 	return allAccounts
 
 }
-
 
 func (a *Account) UpdateAccount(attribute string, newValue interface{}) error { //UPDATE
 	switch attribute {
@@ -130,21 +124,19 @@ func (a *Account) Deactivate() { //DELETE
 	a.SetIsActive(false)
 }
 
+func (a *Account) Deposit(amount float64, accountid int, bankid int, transfer bool, fromacc int, frombankid int) error {
 
-
-func (a *Account) Deposit(amount float64,accountid int,bankid int,transfer bool,fromacc int,frombankid int) error {
-
-	if amount <= 0 { //DRY
-		return errors.New("deposit amount must be greater than zero")
+	if err := validation.ValidatePositiveNumber("Amount", amount); err != nil {
+		return err
 	}
 
 	newBalance := a.GetBalance() + amount
 	a.SetBalance(newBalance)
 
-	if transfer{ //if the deposit is being called from transfer method of customer
-	
-		transaction,err:=NewTransaction("credit",amount,newBalance,fromacc,frombankid,time.Now())
-		if err!=nil{ 
+	if transfer { //if the deposit is being called from transfer method of customer
+
+		transaction, err := NewTransaction("credit", amount, newBalance, fromacc, frombankid, time.Now())
+		if err != nil {
 			return err
 		}
 
@@ -152,20 +144,19 @@ func (a *Account) Deposit(amount float64,accountid int,bankid int,transfer bool,
 
 		return nil
 
-	}else{
+	} else {
 
-		transaction,err:=NewTransaction("credit",amount,newBalance,accountid,bankid,time.Now())
-		if err!=nil{
+		transaction, err := NewTransaction("credit", amount, newBalance, accountid, bankid, time.Now())
+		if err != nil {
 			return err
 		}
 		a.passbook.AddTransaction(transaction)
 
 		return nil
-}
+	}
 }
 
-func (a *Account) Withdraw(amount float64,accountid int,bankid int,transfer bool,toacc int,tobankid int) error {
-
+func (a *Account) Withdraw(amount float64, accountid int, bankid int, transfer bool, toacc int, tobankid int) error {
 
 	if err := validation.ValidatePositiveNumber("Amount", amount); err != nil {
 		return err
@@ -177,9 +168,9 @@ func (a *Account) Withdraw(amount float64,accountid int,bankid int,transfer bool
 	newBalance := a.GetBalance() - amount
 	a.SetBalance(newBalance)
 
-	if transfer{ //if withdraw was called from transfer method of customer
-		transaction,err:=NewTransaction("debit",amount,newBalance,toacc,tobankid,time.Now())
-		if err!=nil{
+	if transfer { //if withdraw was called from transfer method of customer
+		transaction, err := NewTransaction("debit", amount, newBalance, toacc, tobankid, time.Now())
+		if err != nil {
 			return err
 		}
 
@@ -187,9 +178,9 @@ func (a *Account) Withdraw(amount float64,accountid int,bankid int,transfer bool
 
 		return nil
 
-	}else{
-		transaction,err:=NewTransaction("debit",amount,newBalance,accountid,bankid,time.Now())
-		if err!=nil{
+	} else {
+		transaction, err := NewTransaction("debit", amount, newBalance, accountid, bankid, time.Now())
+		if err != nil {
 			return err
 		}
 
@@ -199,6 +190,4 @@ func (a *Account) Withdraw(amount float64,accountid int,bankid int,transfer bool
 
 	}
 
-
 }
-

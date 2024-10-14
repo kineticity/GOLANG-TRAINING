@@ -74,7 +74,6 @@ func (c *User) NewCustomer(firstName, lastName string) (*User, error) { //CREATE
 		return nil, errors.New("only admin can create new customers")
 	}
 
-
 	if err := validation.ValidateNonEmptyString("First name", firstName); err != nil {
 		return nil, err
 	}

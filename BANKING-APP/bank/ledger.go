@@ -21,7 +21,9 @@ type BankLedger struct { //bank to bank ledger
 	entries []LedgerEntry 
 }
 
-
+// type CorporateLedger struct{ cab be cashledger,equities ledger, collateral ledger
+// 	entries []LedgerEntry
+// }
 
 func NewBankLedger() *BankLedger {
 	return &BankLedger{
