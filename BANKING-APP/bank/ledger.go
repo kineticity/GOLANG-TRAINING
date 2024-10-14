@@ -4,9 +4,7 @@ import (
 	"fmt"
 )
 
-// type Entry interface{
 
-// }
 type LedgerEntry struct {
 	BankName string  
 	Amount   float64 

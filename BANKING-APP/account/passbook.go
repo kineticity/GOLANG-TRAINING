@@ -7,7 +7,7 @@ import (
 
 var allTransactions []*Transaction
 type Passbook struct {
-	transactions []*Transaction //iska bhi interface?
+	transactions []*Transaction 
 }
 
 func NewPassbook(initialBalance float64,accountid int,bankid int) (*Passbook,error) {

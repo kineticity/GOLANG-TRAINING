@@ -7,9 +7,7 @@ import (
 	"time"
 )
 
-// type Transactioninterface interface{
-// 	PrintTransaction()
-// }
+
 type Transaction struct {
 	category  string // credit or debit
 	amount    float64

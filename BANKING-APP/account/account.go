@@ -11,7 +11,7 @@ type Account struct {
 	balance   float64
 	isActive  bool
 	bankid int
-	passbook  *Passbook //iska bhi interface chahiye ig
+	passbook  *Passbook 
 }
 
 
