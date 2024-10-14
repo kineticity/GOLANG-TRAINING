@@ -162,22 +162,18 @@ func (b *Bank) AddAccount(acc *account.Account) {
 }
 
 
-// GetLedger returns the bank's ledger.
 func (b *Bank) GetLedger() *BankLedger {
 	return b.ledger
 }
 
-// AddTransactionToLedger adds a transaction to the bank's ledger.
 func (b *Bank) AddTransactionToLedger(otherBank string, amount float64) {
 	b.ledger.AddEntry(otherBank, amount)
 }
 
-// PrintBankLedger prints the bank's ledger.
 func (b *Bank) PrintBankLedger() {
 	b.ledger.PrintLedger()
 }
 
-// Example method for a bank to lend money to another bank.
 func (b *Bank) LendTo(otherBankname string, amount float64,otherBankid int) error {
 	b.AddTransactionToLedger(otherBankname, -amount) // Amount owed to the other bank
 	otherbank,err:=GetBankByID(otherBankid)
@@ -188,7 +184,6 @@ func (b *Bank) LendTo(otherBankname string, amount float64,otherBankid int) erro
 	return nil
 }
 
-// Example method for a bank to receive money from another bank.
 func (b *Bank) ReceiveFrom(otherBank string, amount float64,otherBankid int) error {
 	b.AddTransactionToLedger(otherBank, +amount) // Amount owed from the other bank
 	otherbank,err:=GetBankByID(otherBankid)

@@ -14,7 +14,6 @@ type Passbook struct {
 func NewPassbook(initialBalance float64,accountid int,bankid int) (*Passbook,error) {
 	transaction, err := NewTransaction("credit", initialBalance, initialBalance, accountid,bankid,time.Now())
 	if err!=nil{
-		// fmt.Println(err)
 		return nil,err
 	}
 

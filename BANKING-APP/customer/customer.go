@@ -24,7 +24,6 @@ type Customer struct {
 func NewAdmin(firstName, lastName string) (*Customer, error) {
 
 
-
 	if firstName == "" || lastName == "" {
 		return nil, errors.New("first and last name cannot be empty")
 	}
@@ -46,7 +45,6 @@ func (c *Customer) NewCustomer(firstName, lastName string) (*Customer, error) { 
 	if !c.GetIsAdmin() {
 		return nil, errors.New("only admin can create new customers")
 	}
-
 
 
 	if firstName == "" || lastName == "" {
@@ -155,7 +153,7 @@ func (c *Customer) UpdateCustomer(customerID int, attribute string, newValue int
 		}
 	}
 	if targetCustomer == nil {
-		return errors.New("non-admin customer not found or inactive")
+		return errors.New("target customer not found or inactive")
 	}
 
 	switch attribute {
@@ -201,16 +199,17 @@ func (c *Customer) CreateAccount(initialBalance float64,bankid int) error { //CR
 	if initialBalance < 1000 {
 		return errors.New("initial balance must be at least Rs. 1000")
 	}
+	bankWhereAccountIsMade,err:=bank.GetBankByID(bankid)
+	if err!=nil{
+		return err
+	}
 
 	newAccount, err := account.NewAccount(initialBalance,bankid)
 	if err != nil {
 		return err
 	}
 
-	bankWhereAccountIsMade,err:=bank.GetBankByID(bankid)
-	if err!=nil{
-		return err
-	}
+
 	bankWhereAccountIsMade.AddAccount(newAccount)
 	c.SetAccounts(append(c.GetAccounts(),newAccount))
 	c.UpdateTotalBalance() 

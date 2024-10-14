@@ -17,7 +17,7 @@ type Account struct {
 var allAccounts []*Account
 var accountid int = 1
 
-func NewAccount(initialBalance float64,bankid int) (*Account, error) {
+func NewAccount(initialBalance float64,bankid int) (*Account, error) { //bankid is validated in customer's createaccount
 	if initialBalance < 1000 {
 		return nil, errors.New("initial balance must be at least Rs. 1000")
 	}
