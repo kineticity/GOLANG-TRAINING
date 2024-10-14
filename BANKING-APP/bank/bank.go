@@ -20,6 +20,8 @@ type BankOperations interface{
 	ReceiveFrom(otherBank string, amount float64,otherBankid int) error
 	Read() string
 	Delete()
+	GetFullName() string
+	
 
 }
 type Bank struct {
@@ -32,13 +34,7 @@ type Bank struct {
 }
 
 func NewBank(fullName, abbreviation string) (*Bank, error) {
-	//REPEATING NAME CHECK MAKE FN -DRY
-	// if fullName == "" {
-	// 	return nil, errors.New("full name cannot be empty")
-	// }
-	// if abbreviation == "" {
-	// 	return nil, errors.New("abbreviation cannot be empty")
-	// }
+
 	if err := validation.ValidateNonEmptyString("Full name", fullName); err != nil {
 		return nil, err
 	}
@@ -96,8 +92,8 @@ func (b *Bank) SetIsActive(active bool) {
 	b.isActive = active
 }
 
-func GetAllBanks() []*Bank { //GETALL
-	var activeBanks []*Bank
+func GetAllBanks() []BankOperations { //GETALL
+	var activeBanks []BankOperations
 	for _, b := range banks {
 		if b.GetIsActive() {
 			activeBanks = append(activeBanks, &b)
@@ -134,29 +130,20 @@ func (b *Bank) UpdateBankField(param, newValue string) error { //UPDATE
 	if !b.GetIsActive() {
 		return errors.New("bank is not active, cannot update")
 	}
-	// if param == "" {
-	// 	return errors.New("parameter name can't be empty")
-	// }
-	// Validate that the parameter name is not empty
+
 	if err := validation.ValidateNonEmptyString("Parameter name", param); err != nil {
 		return err
 	}
-
-
 	switch param {
 	case "bankName":
-		// if newValue == "" {
-		// 	return errors.New("bank name cannot be empty")
-		// }
+
 		if err := validation.ValidateNonEmptyString("Bank name", newValue); err != nil {
 			return err
 		}
 		b.SetFullName(newValue)
 		fmt.Printf("Bank name updated to: %s\n", b.GetFullName())
 	case "abbreviation":
-		// if newValue == "" {
-		// 	return errors.New("abbreviation cannot be empty")
-		// }
+
 		if err := validation.ValidateNonEmptyString("Abbreviation", newValue); err != nil {
 			return err
 		}

@@ -29,7 +29,7 @@ func main() {
 		fmt.Println("Error creating bank:", err)
 		return
 	}
-	fmt.Println("Bank created:", bank1.GetFullName())
+	fmt.Println("Bank created:", bank2.GetFullName())
 
 	// Create a new customer by admin
 	newCustomer, err := admin.NewCustomer("John", "Doe")
@@ -182,6 +182,9 @@ func main() {
 	}else{
 		fmt.Println(bank.Read())
 	}
+
+	bankopobj,_:=admindemo.GetAllBanks()
+	fmt.Println(bankopobj[0].GetFullName())
 	// fmt.Println(bank.Read())
 }
 

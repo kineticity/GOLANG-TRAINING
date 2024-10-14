@@ -42,29 +42,6 @@ func NewAccount(initialBalance float64,bankid int) (*Account, error) { //bankid 
 	return account, nil
 }
 
-// func NewAccountv2(initialBalance float64,bankid int) (*Account, error) { //bankid is validated in customer's createaccount
-// 	if initialBalance < 1000 {
-// 		return nil, errors.New("initial balance must be at least Rs. 1000")
-// 	}
-// 	passbook,err:=NewPassbook(initialBalance,accountid,bankid)
-// 	if err!=nil{
-// 		return nil,err
-// 	}
-// 	a,_:=GetAccountByID(accountid,allAccounts)
-
-// 	account := &Accountv2{
-// 		a:a,
-
-// 		bankid:bankid,
-// 		passbook:  passbook,
-// 	}
-// 	accountid++
-// 	allAccounts = append(allAccounts, account)
-
-
-// 	return account, nil
-// }
-
 
 // Getter Setter fns
 func (a *Account) GetAccountID() int {
@@ -127,9 +104,7 @@ func (a *Account) UpdateAccount(attribute string, newValue interface{}) error { 
 	switch attribute {
 	case "balance":
 		if value, ok := newValue.(float64); ok {
-			// if value < 0 {
-			// 	return errors.New("balance cannot be negative")
-			// }
+
 			if err := validation.ValidatePositiveNumber("Balance", value); err != nil {
 				return err
 			}
@@ -169,7 +144,7 @@ func (a *Account) Deposit(amount float64,accountid int,bankid int,transfer bool,
 	if transfer{ //if the deposit is being called from transfer method of customer
 	
 		transaction,err:=NewTransaction("credit",amount,newBalance,fromacc,frombankid,time.Now())
-		if err!=nil{ //DRY?
+		if err!=nil{ 
 			return err
 		}
 
@@ -191,9 +166,7 @@ func (a *Account) Deposit(amount float64,accountid int,bankid int,transfer bool,
 
 func (a *Account) Withdraw(amount float64,accountid int,bankid int,transfer bool,toacc int,tobankid int) error {
 
-	// if amount <= 0 {
-	// 	return errors.New("withdraw amount must be greater than zero")
-	// }
+
 	if err := validation.ValidatePositiveNumber("Amount", amount); err != nil {
 		return err
 	}

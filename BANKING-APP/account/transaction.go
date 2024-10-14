@@ -21,15 +21,11 @@ func NewTransaction(category string, amount float64, balance float64, accountid 
 	if category != "credit" && category != "debit" {
 		return nil, errors.New("invalid category: must be 'credit' or 'debit'")
 	}
-	// if amount <= 0 {
-	// 	return nil, errors.New("amount must be greater than zero")
-	// }
+
 	if err := validation.ValidatePositiveNumber("Amount", amount); err != nil {
 		return nil, err
 	}
-	// if accountid <= 0 || bankid <= 0 {
-	// 	return nil, errors.New("invalid account ID or bank ID")
-	// }
+
 	if err := validation.ValidatePositiveNumber("accountid", float64(accountid)); err != nil {
 		return nil, err
 	}
@@ -67,9 +63,7 @@ func (t *Transaction) GetAmount() float64 {
 }
 
 func (t *Transaction) SetAmount(amount float64) error {
-	// if amount <= 0 {
-	// 	return errors.New("amount must be greater than zero")
-	// }
+
 	if err := validation.ValidatePositiveNumber("Amount", amount); err != nil {
 		return err
 	}
@@ -90,9 +84,7 @@ func (t *Transaction) GetAccountID() int {
 }
 
 func (t *Transaction) SetAccountID(accountid int) error {
-	// if accountid <= 0 {
-	// 	return errors.New("invalid account ID")
-	// }
+
 	if err := validation.ValidatePositiveNumber("AccountID", float64(accountid)); err != nil {
 		return err
 	}
@@ -108,9 +100,7 @@ func (t *Transaction) SetBankID(bankid int) error {
 	if err := validation.ValidatePositiveNumber("BankID", float64(bankid)); err != nil {
 		return err
 	}
-	// if bankid <= 0 {
-	// 	return errors.New("invalid bank ID")
-	// }
+
 	t.bankid = bankid
 	return nil
 }

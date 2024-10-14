@@ -9,9 +9,9 @@ import (
 )
 
 var customerid int = 1
-var customers []*Customer
+var users []*User
 
-type Customer struct {
+type User struct {
 	customerID     int
 	firstName      string
 	lastName       string
@@ -23,13 +23,13 @@ type Customer struct {
 }
 
 type Admin interface {
-	NewCustomer(firstName, lastName string) (*Customer, error)
-	GetCustomers() ([]*Customer, error)
-	GetCustomerByID(customerID int) (*Customer, error)
+	NewCustomer(firstName, lastName string) (*User, error)
+	GetCustomers() ([]*User, error)
+	GetCustomerByID(customerID int) (*User, error)
 	UpdateCustomer(customerID int, attribute string, newValue interface{}) error
 	DeleteCustomer(customerID int) error
 	CreateBank(fullName, abbreviation string) error
-	GetAllBanks() ([]*bank.Bank, error)
+	GetAllBanks() ([]bank.BankOperations, error)
 	GetBankByID(bankID int) (bank.BankOperations, error)
 	UpdateBank(bankID int, param string, newValue string) error
 	DeleteBank(bankID int) error
@@ -49,13 +49,13 @@ type BankCustomer interface {
 	Transfer(fromAccountNo, toAccountNo int, amount float64) error
 }
 
-func NewAdmin(firstName, lastName string) (*Customer, error) {
+func NewAdmin(firstName, lastName string) (*User, error) {
 
 	if firstName == "" || lastName == "" {
 		return nil, errors.New("first and last name cannot be empty")
 	}
 
-	c := &Customer{
+	c := &User{
 		customerID:     customerid,
 		firstName:      firstName,
 		lastName:       lastName,
@@ -69,14 +69,12 @@ func NewAdmin(firstName, lastName string) (*Customer, error) {
 	return c, nil
 }
 
-func (c *Customer) NewCustomer(firstName, lastName string) (*Customer, error) { //CREATE CUSTOMER
+func (c *User) NewCustomer(firstName, lastName string) (*User, error) { //CREATE CUSTOMER
 	if !c.GetIsAdmin() {
 		return nil, errors.New("only admin can create new customers")
 	}
 
-	// if firstName == "" || lastName == "" {
-	// 	return nil, errors.New("first and last name cannot be empty")
-	// }
+
 	if err := validation.ValidateNonEmptyString("First name", firstName); err != nil {
 		return nil, err
 	}
@@ -84,7 +82,7 @@ func (c *Customer) NewCustomer(firstName, lastName string) (*Customer, error) { 
 		return nil, err
 	}
 
-	newCustomer := &Customer{
+	newCustomer := &User{
 		customerID:     customerid,
 		firstName:      firstName,
 		lastName:       lastName,
@@ -93,100 +91,100 @@ func (c *Customer) NewCustomer(firstName, lastName string) (*Customer, error) { 
 		isActive:       true,
 	}
 	customerid++
-	customers = append(customers, newCustomer)
+	users = append(users, newCustomer) //users is storing customers only not admins
 
 	return newCustomer, nil
 }
 
 // Getter Setter fns
-func (c *Customer) GetCustomerID() int {
+func (c *User) GetCustomerID() int {
 	return c.customerID
 }
 
-func (c *Customer) SetCustomerID(id int) {
+func (c *User) SetCustomerID(id int) {
 	c.customerID = id
 }
 
-func (c *Customer) GetFirstName() string {
+func (c *User) GetFirstName() string {
 	return c.firstName
 }
 
-func (c *Customer) SetFirstName(firstName string) {
+func (c *User) SetFirstName(firstName string) {
 	c.firstName = firstName
 }
 
-func (c *Customer) GetLastName() string {
+func (c *User) GetLastName() string {
 	return c.lastName
 }
 
-func (c *Customer) SetLastName(lastName string) {
+func (c *User) SetLastName(lastName string) {
 	c.lastName = lastName
 }
 
-func (c *Customer) GetIsAdmin() bool {
+func (c *User) GetIsAdmin() bool {
 	return c.isAdmin
 }
 
-func (c *Customer) SetIsAdmin(admin bool) {
+func (c *User) SetIsAdmin(admin bool) {
 	c.isAdmin = admin
 }
-func (c *Customer) GetIsBankCustomer() bool {
+func (c *User) GetIsBankCustomer() bool {
 	return c.isBankCustomer
 }
 
-func (c *Customer) SetIsBankCustomer(bankcustomer bool) {
+func (c *User) SetIsBankCustomer(bankcustomer bool) {
 	c.isBankCustomer = bankcustomer
 }
-func (c *Customer) GetIsActive() bool {
+func (c *User) GetIsActive() bool {
 	return c.isActive
 }
 
-func (c *Customer) SetIsActive(active bool) {
+func (c *User) SetIsActive(active bool) {
 	c.isActive = active
 }
 
-func (c *Customer) GetAccounts() []*account.Account {
+func (c *User) GetAccounts() []*account.Account {
 	return c.accounts
 }
 
-func (c *Customer) SetAccounts(accounts []*account.Account) {
+func (c *User) SetAccounts(accounts []*account.Account) {
 	c.accounts = accounts
 }
 
-func (c *Customer) GetTotalBalance() float64 {
+func (c *User) GetTotalBalance() float64 {
 	return c.totalBalance
 }
 
-func (c *Customer) SetTotalBalance(balance float64) {
+func (c *User) SetTotalBalance(balance float64) {
 	c.totalBalance = balance
 }
 
-func (c *Customer) GetCustomers() ([]*Customer, error) {
+func (c *User) GetCustomers() ([]*User, error) {
 	if !c.GetIsAdmin() {
 		return nil, errors.New("only admins can retrieve customers")
 	}
-	return customers, nil
+	return users, nil
 }
 
-func (c *Customer) GetCustomerByID(customerID int) (*Customer, error) {
+func (c *User) GetCustomerByID(customerID int) (*User, error) {
 	if !c.GetIsAdmin() {
 		return nil, errors.New("only admins can retrieve customers by ID")
 	}
 
-	for _, customer := range customers {
+	for _, customer := range users {
 		if customer.GetCustomerID() == customerID && customer.GetIsActive() {
 			return customer, nil
 		}
 	}
 	return nil, errors.New("customer not found or inactive")
 }
-func (c *Customer) UpdateCustomer(customerID int, attribute string, newValue interface{}) error { //UPDATE CUSTOMER
+func (c *User) UpdateCustomer(customerID int, attribute string, newValue interface{}) error { //UPDATE CUSTOMER
 	if !c.GetIsAdmin() {
 		return errors.New("only admins can update non-admin customers")
 	}
 
-	var targetCustomer *Customer
-	for _, customer := range customers {
+	var targetCustomer *User
+	for _, customer := range users {
 		if customer.GetCustomerID() == customerID && !customer.GetIsAdmin() && customer.GetIsActive() { //admin cannot update other admins !customer.GetIsAdmin()
 			targetCustomer = customer
 			break
@@ -198,11 +196,7 @@ func (c *Customer) UpdateCustomer(customerID int, attribute string, newValue int
 
 	switch attribute {
 	case "firstName":
-		// if value, ok := newValue.(string); ok && value != "" {
-		// 	targetCustomer.SetFirstName(value)
-		// 	return nil
-		// }
-		// return errors.New("invalid value for first name")
+
 		if value, ok := newValue.(string); ok {
 			if err := validation.ValidateNonEmptyString("First name", value); err != nil {
 				return err
@@ -212,11 +206,7 @@ func (c *Customer) UpdateCustomer(customerID int, attribute string, newValue int
 		}
 		return errors.New("invalid value for first name")
 	case "lastName":
-		// if value, ok := newValue.(string); ok && value != "" {
-		// 	targetCustomer.SetLastName(value)
-		// 	return nil
-		// }
-		// return errors.New("invalid value for last name")
+
 		if value, ok := newValue.(string); ok {
 			if err := validation.ValidateNonEmptyString("Last name", value); err != nil {
 				return err
@@ -231,12 +221,12 @@ func (c *Customer) UpdateCustomer(customerID int, attribute string, newValue int
 	}
 }
 
-func (c *Customer) DeleteCustomer(customerID int) error { //DELETE CUSTOMER
+func (c *User) DeleteCustomer(customerID int) error { //DELETE CUSTOMER
 	if !c.GetIsAdmin() {
 		return errors.New("only admins can delete non-admin customers")
 	}
 
-	for _, customer := range customers {
+	for _, customer := range users {
 		if customer.GetCustomerID() == customerID && !customer.GetIsAdmin() && customer.GetIsActive() {
 			customer.SetIsActive(false)
 			fmt.Printf("Customer %s %s has been deleted.\n", customer.GetFirstName(), customer.GetLastName())
@@ -246,15 +236,12 @@ func (c *Customer) DeleteCustomer(customerID int) error { //DELETE CUSTOMER
 	return errors.New("non-admin customer not found or already inactive")
 }
 
-func (c *Customer) CreateAccount(initialBalance float64, bankid int) error { //CREATE ACCOUNT
+func (c *User) CreateAccount(initialBalance float64, bankid int) error { //CREATE ACCOUNT
 	if !c.GetIsBankCustomer() {
 		return errors.New("only bank customers can create accounts")
 	}
 	if !c.GetIsActive() {
 		return errors.New("customer is not active, cannot create account")
-	}
-	if initialBalance < 1000 { //should this be in account?
-		return errors.New("initial balance must be at least Rs. 1000")
 	}
 	bankWhereAccountIsMade, err := bank.GetBankByID(bankid) //should this be in account?
 	if err != nil {
@@ -272,7 +259,7 @@ func (c *Customer) CreateAccount(initialBalance float64, bankid int) error { //C
 	return nil
 }
 
-func (c *Customer) GetAccountByID(accountID int) (*account.Account, error) { //GETBYID
+func (c *User) GetAccountByID(accountID int) (*account.Account, error) { //GETBYID
 	if !c.GetIsBankCustomer() {
 		return nil, errors.New("only bank customers can retrieve their accounts")
 	}
@@ -283,7 +270,7 @@ func (c *Customer) GetAccountByID(accountID int) (*account.Account, error) { //G
 	return account.GetAccountByID(accountID, c.GetAccounts())
 }
 
-func (c *Customer) GetAllAccounts() ([]*account.Account, error) { //GETALL
+func (c *User) GetAllAccounts() ([]*account.Account, error) { //GETALL
 	if !c.GetIsBankCustomer() {
 		return nil, errors.New("only bank customers can retrieve their accounts")
 	}
@@ -294,7 +281,7 @@ func (c *Customer) GetAllAccounts() ([]*account.Account, error) { //GETALL
 	return c.GetAccounts(), nil
 }
 
-func (c *Customer) UpdateAccount(accountID int, attribute string, newValue interface{}) error { //UPDATE ACCOUNT
+func (c *User) UpdateAccount(accountID int, attribute string, newValue interface{}) error { //UPDATE ACCOUNT
 	if !c.GetIsBankCustomer() {
 		return errors.New("only bank customers can update their accounts")
 	}
@@ -316,7 +303,7 @@ func (c *Customer) UpdateAccount(accountID int, attribute string, newValue inter
 	return acc.UpdateAccount(attribute, newValue)
 }
 
-func (c *Customer) DeleteAccount(accountID int) error { //DELETE ACCOUNT
+func (c *User) DeleteAccount(accountID int) error { //DELETE ACCOUNT
 	if !c.GetIsBankCustomer() {
 		return errors.New("only bank customers can delete their accounts")
 	}
@@ -335,7 +322,7 @@ func (c *Customer) DeleteAccount(accountID int) error { //DELETE ACCOUNT
 	return errors.New("account not found")
 }
 
-func (c *Customer) UpdateTotalBalance() {
+func (c *User) UpdateTotalBalance() {
 	total := 0.0
 	for _, acc := range c.GetAccounts() {
 		if acc.GetIsActive() {
@@ -345,7 +332,7 @@ func (c *Customer) UpdateTotalBalance() {
 	c.SetTotalBalance(total)
 }
 
-func (c *Customer) CreateBank(fullName, abbreviation string) error { //CREATE BANK
+func (c *User) CreateBank(fullName, abbreviation string) error { //CREATE BANK
 	if !c.GetIsAdmin() {
 		return errors.New("only admin can create banks")
 	}
@@ -358,7 +345,7 @@ func (c *Customer) CreateBank(fullName, abbreviation string) error { //CREATE BA
 	return nil
 }
 
-func (c *Customer) GetAllBanks() ([]*bank.Bank, error) { //GETALL
+func (c *User) GetAllBanks() ([]bank.BankOperations, error) { //GETALL
 	if !c.GetIsAdmin() {
 		return nil, errors.New("only admin can read all banks")
 	}
@@ -372,20 +359,8 @@ func (c *Customer) GetAllBanks() ([]*bank.Bank, error) { //GETALL
 	return banks, nil
 }
 
-// func (c *Customer) GetBankByID(bankID int) (*bank.Bank, error) { //GETBYID
-// 	if !c.GetIsAdmin() {
-// 		return nil, errors.New("only admin can read a bank by ID")
-// 	}
-// 	// var b bank.BankOperations
-// 	b, err := bank.GetBankByID(bankID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
 
-// 	return b, nil
-// }
-
-func (c *Customer) GetBankByID(bankID int) (bank.BankOperations, error) { //GETBYID
+func (c *User) GetBankByID(bankID int) (bank.BankOperations, error) { //GETBYID
 	if !c.GetIsAdmin() {
 		return nil, errors.New("only admin can read a bank by ID")
 	}
@@ -398,7 +373,7 @@ func (c *Customer) GetBankByID(bankID int) (bank.BankOperations, error) { //GETB
 	return b, nil
 }
 
-func (c *Customer) UpdateBank(bankID int, param string, newValue string) error { //UPDATE BANK
+func (c *User) UpdateBank(bankID int, param string, newValue string) error { //UPDATE BANK
 	if !c.GetIsAdmin() {
 		return errors.New("only admin can update banks")
 	}
@@ -418,7 +393,7 @@ func (c *Customer) UpdateBank(bankID int, param string, newValue string) error {
 }
 
 // DELETE BANK BY ID
-func (c *Customer) DeleteBank(bankID int) error {
+func (c *User) DeleteBank(bankID int) error {
 	if !c.GetIsAdmin() {
 		return errors.New("only admin can delete banks")
 	}
@@ -432,20 +407,8 @@ func (c *Customer) DeleteBank(bankID int) error {
 	return nil
 }
 
-// func (c *Customer) DeleteBank(bankID int) error {
-// 	if !c.GetIsAdmin() {
-// 		return errors.New("only admin can delete banks")
-// 	}
-// 	// var bankToDelete bank.BankOperations
-// 	bankToDelete,err:=bank.GetBankByID(bankID)
-// 	if err!=nil{
-// 		return err
-// 	}
-// 	bankToDelete.Delete()
-// 	return nil
-// }
 
-func (c *Customer) Deposit(accountNo int, amount float64) error {
+func (c *User) Deposit(accountNo int, amount float64) error {
 	if !c.GetIsBankCustomer() {
 		return errors.New("only bank customers can deposit money")
 	}
@@ -471,7 +434,7 @@ func (c *Customer) Deposit(accountNo int, amount float64) error {
 	return nil
 }
 
-func (c *Customer) Withdraw(accountNo int, amount float64) error {
+func (c *User) Withdraw(accountNo int, amount float64) error {
 	if !c.GetIsBankCustomer() {
 		return errors.New("only bank customers can withdraw money")
 	}
@@ -497,7 +460,7 @@ func (c *Customer) Withdraw(accountNo int, amount float64) error {
 	return nil
 }
 
-func (c *Customer) Transfer(fromAccountNo, toAccountNo int, amount float64) error {
+func (c *User) Transfer(fromAccountNo, toAccountNo int, amount float64) error {
 	if !c.GetIsBankCustomer() {
 		return errors.New("only bank customers can transfer money between accounts")
 	}

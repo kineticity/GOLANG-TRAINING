@@ -17,9 +17,11 @@ type Ledger interface{
 
 }
 
-type BankLedger struct {
+type BankLedger struct { //bank to bank ledger
 	entries []LedgerEntry 
 }
+
+
 
 func NewBankLedger() *BankLedger {
 	return &BankLedger{
