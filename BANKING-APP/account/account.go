@@ -3,16 +3,18 @@ package account
 import (
 	"errors"
 	"time"
+	"bankingApp/validations"
 )
-
 
 type Account struct {
 	accountID int
 	balance   float64
 	isActive  bool
 	bankid int
-	passbook  *Passbook
+	passbook  *Passbook //iska bhi interface chahiye ig
 }
+
+
 
 var allAccounts []*Account
 var accountid int = 1
@@ -25,7 +27,6 @@ func NewAccount(initialBalance float64,bankid int) (*Account, error) { //bankid 
 	if err!=nil{
 		return nil,err
 	}
-
 
 	account := &Account{
 		accountID: accountid,
@@ -41,6 +42,28 @@ func NewAccount(initialBalance float64,bankid int) (*Account, error) { //bankid 
 	return account, nil
 }
 
+// func NewAccountv2(initialBalance float64,bankid int) (*Account, error) { //bankid is validated in customer's createaccount
+// 	if initialBalance < 1000 {
+// 		return nil, errors.New("initial balance must be at least Rs. 1000")
+// 	}
+// 	passbook,err:=NewPassbook(initialBalance,accountid,bankid)
+// 	if err!=nil{
+// 		return nil,err
+// 	}
+// 	a,_:=GetAccountByID(accountid,allAccounts)
+
+// 	account := &Accountv2{
+// 		a:a,
+
+// 		bankid:bankid,
+// 		passbook:  passbook,
+// 	}
+// 	accountid++
+// 	allAccounts = append(allAccounts, account)
+
+
+// 	return account, nil
+// }
 
 
 // Getter Setter fns
@@ -80,13 +103,13 @@ func (a *Account) GetPassbook() *Passbook {
 	return a.passbook
 }
 
-func (a *Account) SetPassbook(passbook *Passbook) {
+func (a *Account) SetPassbook(passbook *Passbook) { //YAGNI
 	a.passbook = passbook
 }
 
 
 func GetAccountByID(accountID int,accounts []*Account) (*Account, error) { //GETBYID
-	for _, acc := range accounts {
+	for _, acc := range accounts { //DRY?
 		if acc.GetAccountID() == accountID && acc.GetIsActive() {
 			return acc, nil
 		}
@@ -104,8 +127,11 @@ func (a *Account) UpdateAccount(attribute string, newValue interface{}) error { 
 	switch attribute {
 	case "balance":
 		if value, ok := newValue.(float64); ok {
-			if value < 0 {
-				return errors.New("balance cannot be negative")
+			// if value < 0 {
+			// 	return errors.New("balance cannot be negative")
+			// }
+			if err := validation.ValidatePositiveNumber("Balance", value); err != nil {
+				return err
 			}
 			a.SetBalance(value)
 			return nil
@@ -133,18 +159,17 @@ func (a *Account) Deactivate() { //DELETE
 
 func (a *Account) Deposit(amount float64,accountid int,bankid int,transfer bool,fromacc int,frombankid int) error {
 
-	if amount <= 0 {
+	if amount <= 0 { //DRY
 		return errors.New("deposit amount must be greater than zero")
 	}
 
-	// Update account balance
 	newBalance := a.GetBalance() + amount
 	a.SetBalance(newBalance)
 
 	if transfer{ //if the deposit is being called from transfer method of customer
 	
 		transaction,err:=NewTransaction("credit",amount,newBalance,fromacc,frombankid,time.Now())
-		if err!=nil{
+		if err!=nil{ //DRY?
 			return err
 		}
 
@@ -166,8 +191,11 @@ func (a *Account) Deposit(amount float64,accountid int,bankid int,transfer bool,
 
 func (a *Account) Withdraw(amount float64,accountid int,bankid int,transfer bool,toacc int,tobankid int) error {
 
-	if amount <= 0 {
-		return errors.New("withdraw amount must be greater than zero")
+	// if amount <= 0 {
+	// 	return errors.New("withdraw amount must be greater than zero")
+	// }
+	if err := validation.ValidatePositiveNumber("Amount", amount); err != nil {
+		return err
 	}
 	if a.GetBalance() < amount {
 		return errors.New("insufficient funds")

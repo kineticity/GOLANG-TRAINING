@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// Create an admin customer
-	admin, err := customer.NewAdmin("Alice", "Smith")
+	admin, err := customer.NewAdmin("Sean", "Smith")
 	if err != nil {
 		fmt.Println("Error creating admin:", err)
 		return
@@ -100,7 +100,6 @@ func main() {
 		// fmt.Println(anotherAccountIDInAnotherBank)
 		fmt.Println(anotherBankIDInAnotherBank)
 
-
 		err = newCustomer.Transfer(accountID, anotherAccountIDInAnotherBank, 300)
 		if err != nil {
 			fmt.Println("Error transferring:", err)
@@ -111,7 +110,6 @@ func main() {
 
 	}
 
-	// Print the passbook
 	passbook := acc.GetPassbook() // Assuming there's a method to get the passbook
 	passbook.PrintPassbook()
 
@@ -132,8 +130,7 @@ func main() {
 		fmt.Println("Error deleting customer:", err)
 		return
 	}
-	fmt.Println("Customer deleted:", newCustomer.GetFirstName(), newCustomer.GetLastName(),newCustomer.GetIsActive())
-
+	fmt.Println("Customer deleted:", newCustomer.GetFirstName(), newCustomer.GetLastName(), newCustomer.GetIsActive())
 
 	sbi, _ := bank.NewBank("State Bank of India", "SBI")
 	icici, _ := bank.NewBank("ICICI Bank", "ICICI")
@@ -145,7 +142,46 @@ func main() {
 	sbi.PrintBankLedger()
 
 	fmt.Println("\nICICI Ledger:")
-	icici.PrintBankLedger() 
-}
+	icici.PrintBankLedger()
 
+	var admindemo customer.Admin
+
+
+
+	admindemo,err=customer.NewAdmin("Admin","2")
+	if err!=nil{
+		fmt.Println(err)
+	}
+	admindemo.CreateBank("Punjab National Bank","PNB")
+	// banks,_:=admindemo.GetAllBanks()
+	// for _,bank:= range banks{
+	// 	fmt.Println(bank.GetBankID())
+	// 	fmt.Println(bank.GetFullName())
+	// 	fmt.Println(bank.GetAbbreviation())
+	// 	fmt.Println(bank.GetIsActive())
+	// 	fmt.Println(bank.GetLedger())
+	// 	bank.GetLedger().PrintLedger()	
+	// }
+	bank,err:=admindemo.GetBankByID(5)
+	if err!=nil{
+		fmt.Println(err)
+	}else{
+		fmt.Println(bank.Read())
+	}
+	err=admindemo.DeleteBank(5)
+	if err!=nil{
+		fmt.Println(err)
+	}else{
+		fmt.Println("Deleted successfully")
+	}
+
+	// fmt.Println(err)
+	bank,err=admindemo.GetBankByID(5)
+	if err!=nil{
+		fmt.Println(err)
+	}else{
+		fmt.Println(bank.Read())
+	}
+	// fmt.Println(bank.Read())
+}
 

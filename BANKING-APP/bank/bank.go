@@ -2,6 +2,7 @@ package bank
 
 import (
 	"bankingApp/account"
+	"bankingApp/validations"
 	"errors"
 	"fmt"
 	
@@ -9,22 +10,41 @@ import (
 
 var banks []Bank
 var bankid int = 1
+type BankOperations interface{
+	UpdateBankField(param, newValue string) error
+	AddAccount(acc *account.Account)
+	GetLedger() Ledger //abstract ledger interface not concrete bankledger struct
+	AddTransactionToLedger(otherBank string, amount float64)
+	PrintBankLedger()
+	LendTo(otherBankname string, amount float64,otherBankid int) error
+	ReceiveFrom(otherBank string, amount float64,otherBankid int) error
+	Read() string
+	Delete()
 
+}
 type Bank struct {
 	bankID       int
 	fullName     string
 	abbreviation string
 	isActive     bool
 	accounts     []*account.Account
-	ledger *BankLedger
+	ledger Ledger
 }
 
 func NewBank(fullName, abbreviation string) (*Bank, error) {
-	if fullName == "" {
-		return nil, errors.New("full name cannot be empty")
+	//REPEATING NAME CHECK MAKE FN -DRY
+	// if fullName == "" {
+	// 	return nil, errors.New("full name cannot be empty")
+	// }
+	// if abbreviation == "" {
+	// 	return nil, errors.New("abbreviation cannot be empty")
+	// }
+	if err := validation.ValidateNonEmptyString("Full name", fullName); err != nil {
+		return nil, err
 	}
-	if abbreviation == "" {
-		return nil, errors.New("abbreviation cannot be empty")
+
+	if err := validation.ValidateNonEmptyString("Abbreviation", abbreviation); err != nil {
+		return nil, err
 	}
 
 	b := &Bank{
@@ -42,28 +62,6 @@ func NewBank(fullName, abbreviation string) (*Bank, error) {
 	return b, nil
 }
 
-
-// // Bank represents a bank that maintains a ledger with other banks.
-// type Bank struct {
-// 	bankID   int
-// 	fullName string
-// 	abbreviation string
-// 	accounts map[int]*account.Account
-// 	ledger   *ledger.BankLedger // New field for bank ledger
-// }
-
-// // NewBank creates a new Bank instance.
-// func NewBank(fullName, abbreviation string) (*Bank, error) {
-// 	if fullName == "" || abbreviation == "" {
-// 		return nil, errors.New("bank name and abbreviation cannot be empty")
-// 	}
-// 	return &Bank{
-// 		fullName:     fullName,
-// 		abbreviation: abbreviation,
-// 		accounts:     make(map[int]*account.Account),
-// 		ledger:       ledger.NewBankLedger(), // Initialize ledger
-// 	}, nil
-// }
 
 // Getter Setter fns
 func (b *Bank) GetBankID() int {
@@ -117,7 +115,8 @@ func GetBankByID(bankID int) (*Bank, error) { //GETBYID
 	return nil, errors.New("bank not found")
 }
 
-func DeleteBankByID(bankID int) error { //DELETE
+
+func DeleteBankByID(bankID int) error { 
 	for i := range banks {
 		if banks[i].GetBankID() == bankID {
 			banks[i].SetIsActive(false)
@@ -127,25 +126,39 @@ func DeleteBankByID(bankID int) error { //DELETE
 	}
 	return errors.New("bank not found")
 }
-
+func (b *Bank) Read() string {
+	return fmt.Sprintf("Bank ID: %d\nFull Name: %s\nAbbreviation: %s\nActive: %t\n", 
+		b.GetBankID(), b.GetFullName(), b.GetAbbreviation(), b.GetIsActive())
+}
 func (b *Bank) UpdateBankField(param, newValue string) error { //UPDATE
 	if !b.GetIsActive() {
 		return errors.New("bank is not active, cannot update")
 	}
-	if param == "" {
-		return errors.New("parameter name can't be empty")
+	// if param == "" {
+	// 	return errors.New("parameter name can't be empty")
+	// }
+	// Validate that the parameter name is not empty
+	if err := validation.ValidateNonEmptyString("Parameter name", param); err != nil {
+		return err
 	}
+
 
 	switch param {
 	case "bankName":
-		if newValue == "" {
-			return errors.New("bank name cannot be empty")
+		// if newValue == "" {
+		// 	return errors.New("bank name cannot be empty")
+		// }
+		if err := validation.ValidateNonEmptyString("Bank name", newValue); err != nil {
+			return err
 		}
 		b.SetFullName(newValue)
 		fmt.Printf("Bank name updated to: %s\n", b.GetFullName())
 	case "abbreviation":
-		if newValue == "" {
-			return errors.New("abbreviation cannot be empty")
+		// if newValue == "" {
+		// 	return errors.New("abbreviation cannot be empty")
+		// }
+		if err := validation.ValidateNonEmptyString("Abbreviation", newValue); err != nil {
+			return err
 		}
 		b.SetAbbreviation(newValue)
 		fmt.Printf("Bank abbreviation updated to: %s\n", b.GetAbbreviation())
@@ -156,13 +169,18 @@ func (b *Bank) UpdateBankField(param, newValue string) error { //UPDATE
 	return nil
 }
 
+func (b *Bank) Delete() { //DELETE
+		b.SetIsActive(false)	
+	}
+
 func (b *Bank) AddAccount(acc *account.Account) {
 	b.accounts = append(b.accounts, acc)
 	fmt.Printf("Account with ID %d added to Bank ID %d\n", acc.GetAccountID(), b.GetBankID())
 }
 
 
-func (b *Bank) GetLedger() *BankLedger {
+func (b *Bank) GetLedger() Ledger { //abstract ledger
+
 	return b.ledger
 }
 
