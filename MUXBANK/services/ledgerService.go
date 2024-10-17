@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 func AddToLedger(lendingBankID, receivingBankID int, amount float64) error {
 	var lendingBank, receivingBank *models.Bank
 

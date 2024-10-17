@@ -174,9 +174,6 @@ func WithdrawController(w http.ResponseWriter, r *http.Request) {
 		return 
 	}
 		
-
-	
-
 	var requestData struct {
 		Amount float64 `json:"amount"`
 	}
