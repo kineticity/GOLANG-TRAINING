@@ -33,10 +33,8 @@ func ValidateUser(username, password string) (*models.User, error) {
 
 
 func LoginController(w http.ResponseWriter, r *http.Request) {
-	var credentials struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
+
+	var credentials models.User
 	err := json.NewDecoder(r.Body).Decode(&credentials) //unmarshall
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)

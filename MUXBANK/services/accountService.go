@@ -1,10 +1,8 @@
 package services
 
 import (
-	// "bankingApp/controllers"
 	"bankingApp/models"
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -14,7 +12,10 @@ var accountIDCounter = 1
 func CreateAccount(customerID, bankID int, initialBalance float64) (*models.Account, error) {
 	// Check if the bank exists
 	if !bankExists(bankID) {
-		return nil, errors.New("bank does not exist") //bankid validate
+		return nil, errors.New("bank does not exist") 
+	}
+	if initialBalance<2000 {
+		return nil, errors.New("balance should be atleast 2000") 
 	}
 
 	account := &models.Account{
@@ -27,7 +28,6 @@ func CreateAccount(customerID, bankID int, initialBalance float64) (*models.Acco
 	accountIDCounter++
 	allAccounts = append(allAccounts, account)
 
-	fmt.Println("Is this it????")
 	for i, customer := range models.Userslist {
 		if customer.UserID == customerID {
 			models.Userslist[i].Accounts = append(models.Userslist[i].Accounts, account)
@@ -64,7 +64,6 @@ func GetAllAccounts(customerID int) []*models.Account {
 	}
 	return nil
 
-	// return allAccounts
 }
 
 func UpdateAccount(accountID int, bankID int, balance float64) (*models.Account, error) {
@@ -79,6 +78,10 @@ func UpdateAccount(accountID int, bankID int, balance float64) (*models.Account,
 }
 
 func DeleteAccount(accountID int,customerID int) error {
+	// account,err:=GetAccountByID(accountID);if err!=nil{ //soft delete code
+	// 	return err
+	// }
+	// account.IsActive=false //make setter
 	for i, account := range allAccounts {
 		if account.AccountID == accountID {
 			allAccounts = append(allAccounts[:i], allAccounts[i+1:]...)
@@ -99,6 +102,9 @@ func Withdraw(accountID int, amount float64) (*models.Account, error) {
 		if account.AccountID == accountID {
 			if account.Balance < amount {
 				return nil, errors.New("insufficient balance")
+			}
+			if (account.Balance-amount)<2000{
+				return nil,errors.New("minimum 2000 balance should be maintained")
 			}
 			account.Balance -= amount
 			addTransactionToPassbook(account, "withdraw", amount, account.Balance, 0)
@@ -141,6 +147,9 @@ func Transfer(fromAccountID, toAccountID int, amount float64) error {
 
 	if fromAccount.Balance < amount {
 		return errors.New("insufficient balance")
+	}
+	if (fromAccount.Balance-amount)<2000{
+		return errors.New("minimum 2000 balance should be maintained")
 	}
 
 	fromAccount.Balance -= amount

@@ -4,37 +4,41 @@ import (
 	"bankingApp/middlewares"
 	"bankingApp/models"
 	"bankingApp/services"
+	validation "bankingApp/validations"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
+
 	"github.com/gorilla/mux"
 )
 
 func CreateAccountController(w http.ResponseWriter, r *http.Request) {
-	claims, err := middlewares.VerifyJWT(r.Header.Get("Authorization")) 
-	if err != nil || !claims.IsCustomer { //check again???
+	claims, err := validation.VerifyCustomerAuthorization(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 	var accountRequestData models.Account
 
-	if err := json.NewDecoder(r.Body).Decode(&accountRequestData); err != nil {
+	if err := validation.DecodeRequestBody(r, &accountRequestData); err != nil {
 		http.Error(w, "Invalid request data", http.StatusBadRequest)
 		return
 	}
+
 
 	fmt.Println("claims.userid:=",claims.UserID)
 
 	var userCreatingAccount *models.User
 
-	for _,user:=range models.Userslist{
-		if claims.UserID==user.UserID{
-			userCreatingAccount=user
-		}
+
+	userCreatingAccount,err=services.GetCustomerByID(claims.UserID);if err!=nil{
+		http.Error(w,"User Account not found",http.StatusBadRequest)
+		return
 	}
-	fmt.Println("userCreatingAccount:",*userCreatingAccount)
-	for _,existingBankAccount:=range userCreatingAccount.Accounts{
+
+	//check if user already has bank account in this bankid bank
+	for _,existingBankAccount:=range userCreatingAccount.Accounts{ //should maybe go in service?
 		fmt.Println("ExistingBankaccount:",existingBankAccount)
 		if accountRequestData.BankID==existingBankAccount.BankID{
 			http.Error(w,"Customer already has an account in this bank",http.StatusBadRequest)
@@ -42,31 +46,28 @@ func CreateAccountController(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-
 	account, err := services.CreateAccount(claims.UserID, accountRequestData.BankID, accountRequestData.Balance)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 	json.NewEncoder(w).Encode(account)
 }
 
 func GetAccountByIDController(w http.ResponseWriter, r *http.Request) {
-	claims, ok := r.Context().Value("claims").(*models.Claims)
-	if !ok || claims == nil || !claims.IsCustomer {
+	claims, err := validation.VerifyCustomerAuthorization(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	vars := mux.Vars(r)
-	idStr := vars["AccountId"]
 
-	accountID, err := strconv.Atoi(idStr)
+	accountID, err := validation.GetIDFromRequest(r,"AccountId")
 	if err != nil {
-		http.Error(w, "Invalid Account ID", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 
 	account, err := services.GetAccountByID(accountID)
 	if err != nil || account.CustomerID != claims.UserID {
@@ -78,8 +79,8 @@ func GetAccountByIDController(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllAccountsController(w http.ResponseWriter, r *http.Request) {
-	claims, err := middlewares.VerifyJWT(r.Header.Get("Authorization"))
-	if err != nil || !claims.IsCustomer {
+	claims, err := validation.VerifyCustomerAuthorization(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -88,24 +89,22 @@ func GetAllAccountsController(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateAccountController(w http.ResponseWriter, r *http.Request) {
-	claims, err := middlewares.VerifyJWT(r.Header.Get("Authorization"))
-	if err != nil || !claims.IsCustomer {
+	claims, err := validation.VerifyCustomerAuthorization(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	vars := mux.Vars(r)
-	idStr := vars["AccountId"]
-	accountID, err := strconv.Atoi(idStr)
+	accountID, err := validation.GetIDFromRequest(r,"AccountId")
 	if err != nil {
-		http.Error(w, "Invalid Account ID", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	var accountRequestData models.Account
 
 
-	if err := json.NewDecoder(r.Body).Decode(&accountRequestData); err != nil {
+	if err := validation.DecodeRequestBody(r, &accountRequestData); err != nil {
 		http.Error(w, "Invalid request data", http.StatusBadRequest)
 		return
 	}
@@ -120,17 +119,15 @@ func UpdateAccountController(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteAccountController(w http.ResponseWriter, r *http.Request) {
-	claims, err := middlewares.VerifyJWT(r.Header.Get("Authorization"))
-	if err != nil || !claims.IsCustomer {
+	claims, err := validation.VerifyCustomerAuthorization(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	vars := mux.Vars(r)
-	idStr := vars["AccountId"]
-	accountID, err := strconv.Atoi(idStr)
+	accountID, err := validation.GetIDFromRequest(r,"AccountId")
 	if err != nil {
-		http.Error(w, "Invalid Account ID", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	
@@ -178,7 +175,7 @@ func WithdrawController(w http.ResponseWriter, r *http.Request) {
 		Amount float64 `json:"amount"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+	if err := validation.DecodeRequestBody(r, &requestData); err != nil {
 		http.Error(w, "Invalid request data", http.StatusBadRequest)
 		return
 	}
@@ -222,7 +219,7 @@ func DepositController(w http.ResponseWriter, r *http.Request) {
 		Amount float64 `json:"amount"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+	if err := validation.DecodeRequestBody(r, &requestData); err != nil {
 		http.Error(w, "Invalid request data", http.StatusBadRequest)
 		return
 	}
@@ -267,7 +264,7 @@ func TransferController(w http.ResponseWriter, r *http.Request) {
 		Amount      float64 `json:"amount"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+	if err := validation.DecodeRequestBody(r, &requestData); err != nil {
 		http.Error(w, "Invalid request data", http.StatusBadRequest)
 		return
 	}

@@ -18,9 +18,9 @@ func TokenAuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		token := authHeader
+		//token := authHeader
 
-		claims, err := VerifyJWT(token) // Use the correct VerifyJWT function
+		claims, err := VerifyJWT(authHeader) 
 		if err != nil {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
@@ -33,19 +33,15 @@ func TokenAuthMiddleware(next http.Handler) http.Handler {
 
 func VerifyJWT(tokenStr string) (*models.Claims, error) {
 
-
 	claims := &models.Claims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) { //fills claims
 		return secretKey, nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
-
 	if !token.Valid {
 		return nil, errors.New("invalid token")
 	}
-
 	return claims, nil
 }

@@ -1,27 +1,23 @@
 package controllers
 
 import (
-	"bankingApp/middlewares"
+	"bankingApp/models"
 	"bankingApp/services"
+	"bankingApp/validations"
 	"encoding/json"
 	"net/http"
-	"strconv"
-	"github.com/gorilla/mux"
+
 )
 
-var bankRequestData struct { //change to bank struct and check
-	FullName     string `json:"fullname"`
-	Abbreviation string `json:"abbreviation"`
-}
-
 func CreateBankController(w http.ResponseWriter, r *http.Request) {
-	claims, err := middlewares.VerifyJWT(r.Header.Get("Authorization"))
-	if err != nil || !claims.IsAdmin {
+	var bankRequestData models.Bank
+	_, err := validation.VerifyAdminAuthorization(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&bankRequestData); err != nil {
+	if err := validation.DecodeRequestBody(r, &bankRequestData); err != nil {
 		http.Error(w, "Invalid request data", http.StatusBadRequest)
 		return
 	}
@@ -36,12 +32,15 @@ func CreateBankController(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetBankByIDController(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	idStr := vars["BankId"]
-
-	bankID, err := strconv.Atoi(idStr)
+	_, err := validation.VerifyAdminAuthorization(r)
 	if err != nil {
-		http.Error(w, "Invalid BankId parameter", http.StatusBadRequest)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	bankID, err := validation.GetIDFromRequest(r, "BankId")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -55,40 +54,31 @@ func GetBankByIDController(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllBanksController(w http.ResponseWriter, r *http.Request) {
+	_, err := validation.VerifyAdminAuthorization(r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	banks := services.GetAllBanks()
 	json.NewEncoder(w).Encode(banks)
 }
 
 func UpdateBankController(w http.ResponseWriter, r *http.Request) {
-	claims, err := middlewares.VerifyJWT(r.Header.Get("Authorization"))
-	if err != nil || !claims.IsAdmin {
+	var bankRequestData models.Bank
+	_, err := validation.VerifyAdminAuthorization(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-
-	vars := mux.Vars(r)
-	idStr := vars["BankId"]
-	bankID, err := strconv.Atoi(idStr)
+	bankID, err := validation.GetIDFromRequest(r, "BankId")
 	if err != nil {
-		http.Error(w, "Invalid Bank ID", http.StatusBadRequest)
-		return
-	}
-	existingBank, err := services.GetBankByID(bankID)
-	if err != nil {
-		http.Error(w, "Bank not found", http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&bankRequestData); err != nil {
+	if err := validation.DecodeRequestBody(r, &bankRequestData); err != nil {
 		http.Error(w, "Invalid request data", http.StatusBadRequest)
 		return
-	}
-
-	if bankRequestData.FullName == "" {
-		bankRequestData.FullName = existingBank.FullName
-	}
-	if bankRequestData.Abbreviation == "" {
-		bankRequestData.Abbreviation = existingBank.Abbreviation
 	}
 
 	bank, err := services.UpdateBank(bankID, bankRequestData.FullName, bankRequestData.Abbreviation)
@@ -101,17 +91,14 @@ func UpdateBankController(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteBankController(w http.ResponseWriter, r *http.Request) {
-	claims, err := middlewares.VerifyJWT(r.Header.Get("Authorization"))
-	if err != nil || !claims.IsAdmin {
+	_, err := validation.VerifyAdminAuthorization(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-
-	vars := mux.Vars(r)
-	idStr := vars["BankId"]
-	bankID, err := strconv.Atoi(idStr)
+	bankID, err := validation.GetIDFromRequest(r, "BankId")
 	if err != nil {
-		http.Error(w, "Invalid Bank ID", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -120,6 +107,5 @@ func DeleteBankController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 }
-
