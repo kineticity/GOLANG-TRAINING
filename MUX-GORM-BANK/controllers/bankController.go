@@ -17,6 +17,10 @@ func CreateBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if bank.FullName==""||bank.Abbreviation==""{
+		http.Error(w,"empty fields",http.StatusBadRequest)
+	}
+
 	if _, err := services.CreateBank(bank.FullName, bank.Abbreviation); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -28,7 +32,7 @@ func CreateBank(w http.ResponseWriter, r *http.Request) {
 func DeleteBankByID(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
-	if err != nil {
+	if err != nil || id<=0{
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -44,7 +48,7 @@ func DeleteBankByID(w http.ResponseWriter, r *http.Request) {
 func UpdateBankByID(w http.ResponseWriter, r *http.Request) {
     idStr := mux.Vars(r)["id"]
     id, err := strconv.Atoi(idStr)
-    if err != nil {
+    if err != nil || id<=0{
         http.Error(w, "Invalid bank ID", http.StatusBadRequest)
         return
     }
@@ -82,7 +86,7 @@ func GetAllBanks(w http.ResponseWriter, r *http.Request) {
 func GetBankByID(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
-	if err != nil {
+	if err != nil || id<=0{
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

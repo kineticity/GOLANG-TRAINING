@@ -18,6 +18,10 @@ func CreateLedgerEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if entry.Amount<=0||entry.EntryType==""||entry.BankID<=0||entry.CorrespondingBankID<=0{
+		http.Error(w,"invalid request body",http.StatusBadRequest)
+	}
+
 	fmt.Println("entrytype:",entry.EntryType)
 
 	if _, err := services.CreateLedgerEntry(entry.BankID,entry.CorrespondingBankID, entry.Amount,entry.EntryType); err != nil {
@@ -31,7 +35,7 @@ func CreateLedgerEntry(w http.ResponseWriter, r *http.Request) {
 func GetLedgerEntries(w http.ResponseWriter, r *http.Request) {
 	bankIDStr := mux.Vars(r)["bankID"]
 	bankID, err := strconv.Atoi(bankIDStr)
-	if err != nil {
+	if err != nil ||bankID<=0{
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

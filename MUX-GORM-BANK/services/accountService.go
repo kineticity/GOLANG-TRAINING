@@ -72,7 +72,7 @@ func CreateAccount(customerID, bankID uint, initialBalance float64) (*models.Acc
 	return account, nil
 }
 
-func DeleteAccountByID(id int) error {
+func DeleteAccountByID(customerID,accid int) error {
 	tx := database.GetDB().Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -80,7 +80,13 @@ func DeleteAccountByID(id int) error {
 		}
 	}()
 
-	account := &models.Account{Model: gorm.Model{ID: uint(id)}}
+	account := &models.Account{Model: gorm.Model{ID: uint(accid)}}
+
+	account,err:=models.CheckIfAccountBelongsToCustomer(tx,uint(accid),uint(customerID))
+	if err!=nil{
+		tx.Rollback()
+		return err
+	}
 	if err := account.Delete(tx); err != nil {
 		tx.Rollback()
 		return err

@@ -16,6 +16,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if user.Username==""||user.Password==""||user.FirstName==""||user.LastName==""{
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
 	if _,err := services.CreateCustomer(user.Username, user.Password, user.FirstName, user.LastName); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -28,10 +31,11 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUserByID(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err != nil || id<=0{
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
+
 
 	if err := services.DeleteCustomerByID(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -44,8 +48,8 @@ func DeleteUserByID(w http.ResponseWriter, r *http.Request) {
 func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err != nil || id<=0{
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
@@ -61,22 +65,21 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 func UpdateUserByID(w http.ResponseWriter, r *http.Request) {
     idStr := mux.Vars(r)["id"]
     id, err := strconv.Atoi(idStr)
-    if err != nil {
+    if err != nil ||id<=0{
         http.Error(w, "Invalid user ID", http.StatusBadRequest)
         return
     }
 
-    var updateData struct {
-        FirstName string `json:"firstname"`
-        LastName  string `json:"lastname"`
-        Username  string `json:"username"`
-        Password  string `json:"password"` 
-    }
+    var updateData models.User
 
     if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
         http.Error(w, "Invalid request payload", http.StatusBadRequest)
         return
     }
+
+	if updateData.Username==""||updateData.Password==""||updateData.FirstName==""||updateData.LastName==""{
+		http.Error(w,"invalid request body",http.StatusBadRequest)
+	}
 
     user,err := services.UpdateCustomerByID(id, updateData.FirstName, updateData.LastName, updateData.Username, updateData.Password)
     if err != nil {
