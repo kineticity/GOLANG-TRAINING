@@ -4,7 +4,9 @@ import (
 	database "bankingApp/databases"
 	"bankingApp/models"
 	"errors"
+	"fmt"
 	"time"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
@@ -23,7 +25,7 @@ func CreateAccount(customerID, bankID uint, initialBalance float64) (*models.Acc
 		return nil, err
 	}
 
-	err=models.CheckIfAccountExists(tx,customerID,bankID);if err==nil{
+	err=models.CheckIfAccountExists(tx,customerID,bankID);if err!=nil{
 		return nil, errors.New("account already exists in this bank")
 	}
 
@@ -37,6 +39,31 @@ func CreateAccount(customerID, bankID uint, initialBalance float64) (*models.Acc
 		tx.Rollback()
 		return nil, err
 	}
+
+
+	user,err:=models.GetUserByID(tx,int(customerID))
+	if err!=nil{
+		return nil,err
+	}
+
+	if err := user.AddAccount(tx, account); err != nil {
+        tx.Rollback()
+        return nil, err
+    }
+
+	fmt.Println(user.Accounts)
+
+	bank,err:=models.GetBankByID(tx,int(bankID))
+	if err!=nil{
+		return nil,err
+	}
+    if err := bank.AddAccount(tx, account); err != nil {
+        tx.Rollback()
+        return nil, err
+    }
+
+	fmt.Println(bank.Accounts)
+
 
 	if err := tx.Commit().Error; err != nil {
 		return nil, err
@@ -69,7 +96,6 @@ func GetAccountByID(customerID, accountID uint) (*models.Account, error) {
 			tx.Rollback()
 		}
 	}()
-
 
 	var account *models.Account
 
@@ -129,7 +155,7 @@ func UpdateAccountByID(customerID, accountID uint, updatedAccount models.Account
 	account.Balance = updatedAccount.Balance
 	account.BankID = updatedAccount.BankID
 
-	if err := tx.Save(&account).Error; err != nil {
+	if err := account.Update(tx); err != nil { //
 		tx.Rollback()
 		return err
 	}
@@ -272,6 +298,7 @@ func Transfer(fromAccountID, toAccountID int, amount float64) error {
 		tx.Rollback()
 		return err
 	}
+	
 
 	return tx.Commit().Error
 }

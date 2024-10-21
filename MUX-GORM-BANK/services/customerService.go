@@ -10,7 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
 func CreateCustomer(username, password, firstName, lastName string) (*models.User, error) {
 	hashedpass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -36,6 +35,7 @@ func CreateCustomer(username, password, firstName, lastName string) (*models.Use
 		LastName:   lastName,
 		IsAdmin:    false,
 		IsCustomer: true,
+		Accounts:   []*models.Account{},
 	}
 
 	err = user.Create(tx)
@@ -119,8 +119,7 @@ func UpdateCustomerByID(id int, username, password, firstName, lastName string) 
 	return user, nil
 }
 
-
-func GetCustomerByID(id int) (*models.User,error) {
+func GetCustomerByID(id int) (*models.User, error) {
 	tx := database.GetDB().Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -128,13 +127,11 @@ func GetCustomerByID(id int) (*models.User,error) {
 		}
 	}()
 
-	user,err := models.GetUserByID(tx,id); if err!=nil{
-		return nil,err
+	user, err := models.GetUserByID(tx, id)
+	if err != nil {
+		return nil, err
 	}
-	return user,nil
-	
-
-
+	return user, nil
 
 }
 func GetAllCustomers() ([]models.User, error) {

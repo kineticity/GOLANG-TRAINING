@@ -43,3 +43,15 @@ func GetAllUsers(db *gorm.DB) ([]User, error) {
 func (user *User) Update(tx *gorm.DB) error {
 	return tx.Save(user).Error
 }
+
+func (u *User) AddAccount(db *gorm.DB, account *Account) error {
+    account.CustomerID = u.ID
+
+
+
+    if err := db.Model(u).Association("Accounts").Append(account).Error; err != nil {
+        return err
+    }
+
+    return nil
+}

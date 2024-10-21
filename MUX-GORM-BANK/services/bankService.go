@@ -25,6 +25,8 @@ func CreateBank(fullName, abbreviation string) (*models.Bank, error) {
 	bank := &models.Bank{
 		FullName:     fullName,
 		Abbreviation: abbreviation,
+		Accounts: []*models.Account{},
+		Ledger: []*models.LedgerEntry{},
 	}
 
 	err := bank.Create(tx)

@@ -43,3 +43,15 @@ func GetAllBanks(db *gorm.DB) ([]Bank, error) {
 func (b *Bank) Update(db *gorm.DB) error {
 	return db.Save(b).Error
 }
+
+func (b *Bank) AddAccount(db *gorm.DB, account *Account) error {
+    account.BankID = b.ID
+
+
+
+    if err := db.Model(b).Association("Accounts").Append(account).Error; err != nil {
+        return err
+    }
+
+    return nil
+}
